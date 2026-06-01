@@ -137,7 +137,9 @@ function renderInbox() {
     list.innerHTML = '<div class="inbox-item"><p>暂无留言。这里写下来的内容会进 SQLite，Codex 处理时会显示流程。</p></div>';
     return;
   }
-  list.innerHTML = inboxMessages.map(msg => {
+  const shouldStickToBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 96;
+  const chatMessages = [...inboxMessages].reverse();
+  list.innerHTML = chatMessages.map(msg => {
     const events = msg.events || [];
     const finalReply = [...events].reverse().find(event => event.event_type === 'reply');
     const finalError = [...events].reverse().find(event => event.event_type === 'error');
@@ -182,6 +184,7 @@ function renderInbox() {
       </div>
     </article>
   `}).join('');
+  if (shouldStickToBottom) list.scrollTop = list.scrollHeight;
   list.querySelectorAll('[data-inbox-done]').forEach(button => {
     button.addEventListener('click', async () => {
       await fetch(`/api/inbox/${encodeURIComponent(button.dataset.inboxDone)}`, {
