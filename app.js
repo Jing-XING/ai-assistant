@@ -151,6 +151,16 @@ function bindInbox() {
   document.querySelector('#refreshInbox')?.addEventListener('click', fetchInbox);
 }
 
+function bindInboxStream() {
+  if (!("EventSource" in window)) return;
+  const source = new EventSource('/api/inbox/stream');
+  source.onmessage = () => fetchInbox();
+  source.onerror = () => {
+    source.close();
+    setTimeout(bindInboxStream, 5000);
+  };
+}
+
 const tracks = [
   { id: "all", label: "全部", short: "ALL" },
   { id: "paper", label: "论文", short: "PAPER" },
@@ -479,6 +489,7 @@ fetchTasks().then(render);
 bindPomodoro();
 bindNotifications();
 bindInbox();
+bindInboxStream();
 fetchInbox();
 tickClock();
 checkReminders();

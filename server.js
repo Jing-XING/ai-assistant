@@ -1,7 +1,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFile } = require('node:child_process');
+const { spawn } = require('node:child_process');
 const { URL } = require('node:url');
 const { DatabaseSync } = require('node:sqlite');
 
@@ -31,6 +31,7 @@ const WEWORK_WEBHOOK_URL = process.env.WEWORK_WEBHOOK_URL || '';
 const CODEX_BIN = process.env.CODEX_BIN || 'codex';
 const CODEX_AUTO_EXEC = process.env.CODEX_AUTO_EXEC !== '0';
 const runningInboxJobs = new Set();
+const sseClients = new Set();
 
 const seedTasks = [
   ['cikm-entry', 'paper', 'P0', '再试 CIKM 2026 Short/Resource 注册入口', '2026-05-29', 'Short 摘要截止，北京时间', '2026-05-31 19:59', 0, 10],
@@ -84,6 +85,11 @@ function initDb() {
       content TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (inbox_id) REFERENCES inbox(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS app_state (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
   const count = db.prepare('SELECT COUNT(*) AS count FROM tasks').get().count;
@@ -234,6 +240,7 @@ function addBridgeEvent(inboxId, eventType, content) {
     INSERT INTO bridge_events (inbox_id, event_type, content)
     VALUES (?, ?, ?)
   `).run(inboxId, eventType, content);
+  notifySse({ type: 'bridge_event', inbox_id: inboxId });
 }
 
 function inboxExists(id) {
@@ -246,6 +253,27 @@ function setInboxStatus(id, status) {
     SET status = ?, handled_at = CASE WHEN ? = 'done' THEN CURRENT_TIMESTAMP ELSE handled_at END
     WHERE id = ?
   `).run(status, status, id);
+  notifySse({ type: 'inbox_status', inbox_id: id, status });
+}
+
+function getState(key) {
+  return db.prepare('SELECT value FROM app_state WHERE key = ?').get(key)?.value || '';
+}
+
+function setState(key, value) {
+  db.prepare(`
+    INSERT INTO app_state (key, value, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+  `).run(key, value);
+}
+
+function notifySse(payload) {
+  const body = `data: ${JSON.stringify(payload)}\n\n`;
+  for (const client of sseClients) {
+    try { client.write(body); }
+    catch (error) { sseClients.delete(client); }
+  }
 }
 
 function buildCodexPrompt(message) {
@@ -266,36 +294,115 @@ function runCodexForInbox(message) {
   if (!CODEX_AUTO_EXEC || runningInboxJobs.has(message.id)) return;
   runningInboxJobs.add(message.id);
   setInboxStatus(message.id, 'processing');
-  addBridgeEvent(message.id, 'status', '已自动接入 Codex，本机执行器开始处理。');
+  addBridgeEvent(message.id, 'status', '已自动接入网页专用 Codex 会话，开始实时处理。');
 
   const outputFile = path.join('/tmp', `codex-bridge-${message.id}.txt`);
-  const args = [
+  const threadId = getState('codex_thread_id');
+  const commonArgs = [
     '-s', 'workspace-write',
     '-a', 'never',
-    'exec',
-    '--skip-git-repo-check',
     '-C', ROOT,
+    'exec',
+  ];
+  const args = threadId ? [
+    ...commonArgs,
+    'resume',
+    threadId,
+    '--skip-git-repo-check',
+    '--json',
+    '--output-last-message', outputFile,
+    buildCodexPrompt(message),
+  ] : [
+    ...commonArgs,
+    '--skip-git-repo-check',
+    '--json',
     '--output-last-message', outputFile,
     buildCodexPrompt(message),
   ];
 
-  execFile(CODEX_BIN, args, { cwd: ROOT, timeout: 180_000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+  const child = spawn(CODEX_BIN, args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+  let stdoutBuffer = '';
+  let stderr = '';
+  let finalReply = '';
+  const killTimer = setTimeout(() => {
+    addBridgeEvent(message.id, 'error', '自动执行超时，已停止本次 Codex 进程。');
+    child.kill('SIGTERM');
+  }, 180_000);
+
+  function handleJsonLine(line) {
+    if (!line.trim()) return;
+    let event;
+    try { event = JSON.parse(line); }
+    catch (error) {
+      addBridgeEvent(message.id, 'stream', line.slice(0, 1000));
+      return;
+    }
+
+    if (event.type === 'thread.started' && event.thread_id) {
+      setState('codex_thread_id', event.thread_id);
+      addBridgeEvent(message.id, 'status', `已接入 Codex 会话：${event.thread_id}`);
+      return;
+    }
+
+    if (event.type === 'turn.started') {
+      addBridgeEvent(message.id, 'status', 'Codex 已开始生成回复。');
+      return;
+    }
+
+    if (event.type === 'item.completed' && event.item) {
+      if (event.item.type === 'agent_message' && event.item.text) {
+        finalReply = event.item.text.trim();
+        addBridgeEvent(message.id, 'reply', finalReply);
+        return;
+      }
+      const label = event.item.type || 'item';
+      addBridgeEvent(message.id, 'status', `Codex 完成步骤：${label}`);
+      return;
+    }
+
+    if (event.type === 'turn.completed') {
+      addBridgeEvent(message.id, 'status', 'Codex 本轮处理完成。');
+    }
+  }
+
+  child.stdout.on('data', chunk => {
+    stdoutBuffer += chunk.toString();
+    const lines = stdoutBuffer.split(/\r?\n/);
+    stdoutBuffer = lines.pop() || '';
+    for (const line of lines) handleJsonLine(line);
+  });
+
+  child.stderr.on('data', chunk => {
+    stderr += chunk.toString();
+  });
+
+  child.on('error', error => {
     runningInboxJobs.delete(message.id);
-    let reply = '';
+    clearTimeout(killTimer);
+    addBridgeEvent(message.id, 'error', `自动执行启动失败：${error.message}`);
+    setInboxStatus(message.id, 'done');
+  });
+
+  child.on('close', code => {
+    runningInboxJobs.delete(message.id);
+    clearTimeout(killTimer);
+    if (stdoutBuffer.trim()) handleJsonLine(stdoutBuffer);
+
+    let fileReply = '';
     if (fs.existsSync(outputFile)) {
-      reply = fs.readFileSync(outputFile, 'utf8').trim();
+      fileReply = fs.readFileSync(outputFile, 'utf8').trim();
       fs.rmSync(outputFile, { force: true });
     }
-    if (!reply) reply = String(stdout || '').trim();
 
-    if (error) {
-      const detail = String(stderr || error.message || '').trim().split(/\r?\n/).slice(-3).join('\n');
+    if (code !== 0) {
+      const detail = String(stderr || '').trim().split(/\r?\n/).slice(-3).join('\n');
       addBridgeEvent(message.id, 'error', `自动执行失败：${detail || 'Codex CLI 没有返回有效结果。'}`);
       setInboxStatus(message.id, 'done');
       return;
     }
 
-    addBridgeEvent(message.id, 'reply', reply || '已处理，但 Codex 没有返回文本。');
+    if (!finalReply && fileReply) addBridgeEvent(message.id, 'reply', fileReply);
+    if (!finalReply && !fileReply) addBridgeEvent(message.id, 'reply', '已处理，但 Codex 没有返回文本。');
     setInboxStatus(message.id, 'done');
   });
 }
@@ -312,6 +419,18 @@ function scanInboxJobs() {
 }
 
 async function handleApi(req, res, url) {
+
+  if (req.method === 'GET' && url.pathname === '/api/inbox/stream') {
+    res.writeHead(200, {
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-store',
+      connection: 'keep-alive',
+    });
+    res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`);
+    sseClients.add(res);
+    res.on('close', () => sseClients.delete(res));
+    return;
+  }
 
   if (req.method === 'GET' && url.pathname === '/api/inbox') {
     return json(res, 200, { messages: inboxRows() });
