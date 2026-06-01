@@ -111,6 +111,22 @@ function scheduleInboxRefresh() {
   inboxRefreshTimer = setTimeout(fetchInbox, 350);
 }
 
+function processEventView(event) {
+  const content = String(event.content || "");
+  if (event.event_type === "received") return { label: "收到", kind: "received", content };
+  if (event.event_type === "thinking") return { label: "思考", kind: "thinking", content };
+  if (event.event_type === "command") return { label: "命令", kind: "command", content };
+  if (event.event_type === "stream") return { label: "输出", kind: "stream", content };
+  if (event.event_type === "reply") return { label: "结果", kind: "reply", content };
+  if (event.event_type === "error") return { label: "异常", kind: "error", content };
+  if (content.includes("reasoning")) return { label: "思考", kind: "thinking", content: "完成一段推理。" };
+  if (content.includes("command_execution")) return { label: "命令", kind: "command", content: "完成一次命令执行。" };
+  if (content.includes("Codex 已开始")) return { label: "开始", kind: "start", content };
+  if (content.includes("Codex 本轮处理完成")) return { label: "完成", kind: "done", content };
+  if (content.includes("Codex 会话")) return { label: "会话", kind: "session", content };
+  return { label: "进度", kind: "status", content };
+}
+
 function renderInbox() {
   const list = document.querySelector('#inboxList');
   if (!list) return;
@@ -138,15 +154,24 @@ function renderInbox() {
           <p>Codex 正在处理，结果会自动显示在这里。</p>
         </div>
       ` : ''}
-      <div class="bridge-events">
-        ${events.slice(-24).map(event => `
-          <div class="bridge-event ${escapeHtml(event.event_type)}">
-            <span>${escapeHtml(event.created_at)}</span>
-            <strong>${event.event_type === 'reply' ? '回复' : event.event_type === 'stream' ? '输出' : event.event_type === 'received' ? '收到' : event.event_type === 'error' ? '异常' : '进度'}</strong>
-            <p>${escapeHtml(event.content)}</p>
-          </div>
-        `).join('')}
-      </div>
+      <details class="codex-process" ${msg.status === 'processing' ? 'open' : ''}>
+        <summary>
+          <span>Codex 处理过程</span>
+          <strong>${events.length} 条</strong>
+        </summary>
+        <div class="bridge-events">
+          ${events.slice(-24).map(event => {
+            const view = processEventView(event);
+            return `
+              <div class="bridge-event ${escapeHtml(view.kind)}">
+                <span>${escapeHtml(event.created_at)}</span>
+                <strong>${escapeHtml(view.label)}</strong>
+                <p>${escapeHtml(view.content)}</p>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </details>
       <div class="inbox-meta">
         <span>${msg.created_at}</span>
         <button class="inbox-done" data-inbox-done="${msg.id}" type="button">${msg.status === 'done' ? '已处理' : '标记处理'}</button>

@@ -355,6 +355,14 @@ function runCodexForInbox(message) {
         addBridgeEvent(message.id, 'stream', finalReply);
         return;
       }
+      if (event.item.type === 'reasoning') {
+        addBridgeEvent(message.id, 'thinking', '完成一段推理。');
+        return;
+      }
+      if (event.item.type === 'command_execution') {
+        addBridgeEvent(message.id, 'command', '完成一次命令执行。');
+        return;
+      }
       const label = event.item.type || 'item';
       addBridgeEvent(message.id, 'status', `Codex 完成步骤：${label}`);
       return;
