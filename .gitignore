@@ -1,0 +1,5 @@
+.env
+*.log
+*.pid
+*.db
+node_modules/

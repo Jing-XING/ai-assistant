@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个人任务指挥台</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="rail" aria-label="功能导航">
+        <div class="mark">
+          <span class="mark-grid"></span>
+          <div>
+            <strong>Task Deck</strong>
+            <small>2026.05.29 / Beijing</small>
+          </div>
+        </div>
+        <nav class="rail-nav" id="pageNav"></nav>
+        <div class="rail-footer">
+          <span>Week 22</span>
+          <strong id="doneRatio">0%</strong>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topline">
+          <div>
+            <p class="kicker" id="pageKicker">PERSONAL OPERATING BOARD</p>
+            <h1 id="pageTitle">今日任务展示</h1>
+          </div>
+          <div class="top-actions">
+            <div class="today-card">
+              <span>北京时间</span>
+              <strong id="clock">--:--</strong>
+            </div>
+            <div class="theme-picker" id="themePicker" aria-label="配色主题"></div>
+          </div>
+        </header>
+
+        <section class="status-grid" aria-label="状态总览">
+          <article class="status-tile urgent">
+            <span>最近 DDL</span>
+            <strong id="nextDeadline">CIKM Short</strong>
+            <small id="deadlineRemain">计算中</small>
+          </article>
+          <article class="status-tile">
+            <span>今日打开</span>
+            <strong id="openCount">0</strong>
+            <small>未完成事项</small>
+          </article>
+          <article class="status-tile market">
+            <span>股票主线</span>
+            <strong>科技轮动</strong>
+            <small>条件触发，不全天盯盘</small>
+          </article>
+          <article class="status-tile recovery">
+            <span>运动频率</span>
+            <strong>1 + 1</strong>
+            <small>羽毛球一次，健身一次</small>
+          </article>
+        </section>
+
+        <section class="quick-jump" aria-label="快捷入口">
+          <button class="jump-tile" data-page-link="tasks" type="button">
+            <span>Tasks</span>
+            <strong>任务流</strong>
+          </button>
+          <button class="jump-tile" data-page-link="focus" type="button">
+            <span>Focus</span>
+            <strong>番茄钟</strong>
+          </button>
+          <button class="jump-tile" data-page-link="bridge" type="button">
+            <span>Codex</span>
+            <strong>操作桥</strong>
+          </button>
+          <button class="jump-tile" data-page-link="settings" type="button">
+            <span>Setup</span>
+            <strong>提醒/主题</strong>
+          </button>
+        </section>
+
+        <section class="page-view active" data-page="overview">
+          <div class="overview-grid">
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2>今日主线</h2>
+                <span>优先级</span>
+              </div>
+              <div class="task-list compact-list" id="overviewTasks"></div>
+            </section>
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2>时间块</h2>
+                <span>单时段单任务</span>
+              </div>
+              <div class="timeline light-timeline" id="overviewTimeline"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="tasks">
+          <section class="control-strip" aria-label="任务筛选">
+            <div class="segmented" id="filterTabs"></div>
+            <div class="control-actions">
+              <button class="ghost-button" id="resetDone" type="button">重置勾选</button>
+            </div>
+          </section>
+          <div class="task-column">
+            <div class="section-head">
+              <h2>任务流</h2>
+              <span id="activeTrackLabel">全部轨道</span>
+            </div>
+            <div class="task-list" id="taskList"></div>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="focus">
+          <div class="split-layout">
+            <section class="panel-block pomodoro-panel">
+              <div class="section-head compact">
+                <h2>番茄钟</h2>
+                <span>单时段单任务</span>
+              </div>
+              <div class="pomodoro-face">
+                <strong id="pomoTime">25:00</strong>
+                <span id="pomoMode">专注</span>
+              </div>
+              <p class="pomo-task" id="pomoTask">当前：选择一个任务开始</p>
+              <div class="pomo-actions">
+                <button class="theme-button" id="pomoStart" type="button">开始</button>
+                <button class="theme-button" id="pomoPause" type="button">暂停</button>
+                <button class="theme-button" id="pomoReset" type="button">重置</button>
+              </div>
+            </section>
+
+            <section class="panel-block focus-panel">
+              <div class="section-head compact">
+                <h2>时间块</h2>
+                <span>建议</span>
+              </div>
+              <div class="timeline" id="timeline"></div>
+            </section>
+          </div>
+          <section class="panel-block focus-panel principle-block">
+            <div class="section-head compact">
+              <h2>本周原则</h2>
+              <span>执行口径</span>
+            </div>
+            <ul class="principles">
+              <li>论文占最好的连续时间。</li>
+              <li>股票只在固定窗口与触发条件下处理。</li>
+              <li>求职每周固定推进，不挤占论文主块。</li>
+              <li>运动是恢复，不加码成负担。</li>
+            </ul>
+          </section>
+        </section>
+
+        <section class="page-view" data-page="bridge">
+            <section class="panel-block inbox-panel">
+              <div class="section-head compact">
+                <h2>给 Codex 留言</h2>
+                <span>操作桥</span>
+              </div>
+              <textarea id="inboxInput" class="inbox-input" rows="4" placeholder="把任务、想法、提醒直接写在这里..."></textarea>
+              <div class="inbox-actions">
+                <button class="theme-button" id="sendInbox" type="button">发送</button>
+                <button class="theme-button" id="refreshInbox" type="button">刷新</button>
+              </div>
+              <div class="inbox-list" id="inboxList"></div>
+            </section>
+        </section>
+
+        <section class="page-view" data-page="settings">
+          <div class="settings-grid">
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2>提醒</h2>
+                <span>网页端</span>
+              </div>
+              <button class="ghost-button" id="enableNotify" type="button">开启提醒</button>
+              <p class="setting-note">所有带具体时间的任务默认提前 10 分钟提醒；网页保持打开时，浏览器提醒和声音可用。</p>
+            </section>
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2>配色</h2>
+                <span>主题</span>
+              </div>
+              <div class="theme-picker settings-theme-picker" id="themePickerPanel" aria-label="配色主题"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
