@@ -136,6 +136,35 @@ function processEventView(event) {
   return { label: "进度", kind: "status", content };
 }
 
+function isTranscriptMessage(view) {
+  return ["stream", "reply", "error"].includes(view.kind);
+}
+
+function compactProcessContent(content) {
+  const text = String(content || "").replace(/\s+/g, " ").trim();
+  if (!text) return "处理中。";
+  return text.length > 150 ? `${text.slice(0, 150)}...` : text;
+}
+
+function renderProcessEvent(event) {
+  const view = processEventView(event);
+  const time = String(event.created_at || "").slice(11, 19) || "实时";
+  if (isTranscriptMessage(view)) {
+    return `
+      <div class="codex-message ${escapeHtml(view.kind)}">
+        <span>${escapeHtml(view.label)}</span>
+        <p>${escapeHtml(view.content)}</p>
+      </div>
+    `;
+  }
+  return `
+    <div class="codex-step-note ${escapeHtml(view.kind)}">
+      <span>${escapeHtml(time)} · ${escapeHtml(view.label)}</span>
+      <p>${escapeHtml(compactProcessContent(view.content))}</p>
+    </div>
+  `;
+}
+
 function renderInbox() {
   const list = document.querySelector('#inboxList');
   const count = document.querySelector('#chatDockCount');
@@ -170,20 +199,11 @@ function renderInbox() {
       ` : ''}
       <details class="codex-process" ${msg.status === 'processing' ? 'open' : ''}>
         <summary>
-          <span>Codex 处理过程</span>
+          <span>处理过程</span>
           <strong>${events.length} 条</strong>
         </summary>
-        <div class="bridge-events">
-          ${events.slice(-24).map(event => {
-            const view = processEventView(event);
-            return `
-              <div class="bridge-event ${escapeHtml(view.kind)}">
-                <span>${escapeHtml(event.created_at)}</span>
-                <strong>${escapeHtml(view.label)}</strong>
-                <p>${escapeHtml(view.content)}</p>
-              </div>
-            `;
-          }).join('')}
+        <div class="codex-transcript">
+          ${events.slice(-24).map(renderProcessEvent).join('')}
         </div>
       </details>
       <div class="inbox-meta">

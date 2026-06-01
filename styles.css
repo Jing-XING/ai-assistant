@@ -854,82 +854,109 @@ h1 {
 
 .codex-process {
   margin: 8px 0 10px;
-  border: 1px solid rgba(247,239,224,.12);
-  border-radius: 8px;
-  background: rgba(255,255,255,.03);
+  border-top: 1px solid rgba(247,239,224,.1);
+  background: transparent;
 }
 
 .codex-process summary {
-  min-height: 38px;
-  padding: 9px 10px;
+  min-height: 30px;
+  padding: 7px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   cursor: pointer;
-  color: var(--side-text);
-  font-weight: 800;
+  color: var(--side-muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .codex-process summary strong {
-  color: var(--side-muted);
+  color: color-mix(in srgb, var(--side-muted) 78%, transparent);
   font-size: 12px;
+  font-weight: 700;
 }
+
+.codex-transcript {
+  display: grid;
+  gap: 7px;
+  padding: 2px 0 8px;
+}
+
+.codex-step-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 8px;
+  color: color-mix(in srgb, var(--side-muted) 82%, transparent);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.codex-step-note span {
+  color: color-mix(in srgb, var(--side-muted) 72%, transparent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.codex-step-note p {
+  margin: 0;
+  color: color-mix(in srgb, var(--side-muted) 84%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.codex-step-note.thinking span { color: color-mix(in srgb, var(--blue) 72%, var(--side-muted)); }
+.codex-step-note.command span { color: color-mix(in srgb, var(--amber) 72%, var(--side-muted)); }
+.codex-step-note.error span { color: var(--red); }
+
+.codex-message {
+  padding: 9px 10px;
+  border: 1px solid rgba(247,239,224,.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,.045);
+}
+
+.codex-message span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.codex-message p {
+  margin: 0;
+  color: var(--side-text);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.codex-message.reply {
+  border-color: color-mix(in srgb, var(--green) 38%, transparent);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+}
+
+.codex-message.reply span { color: var(--lime); }
+
+.codex-message.error {
+  border-color: color-mix(in srgb, var(--red) 50%, transparent);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+}
+
+.codex-message.error span { color: var(--red); }
 
 .bridge-events {
   display: grid;
-  gap: 0;
-  padding: 2px 10px 10px 18px;
+  gap: 7px;
+  padding: 2px 0 8px;
 }
 
 .bridge-event {
-  position: relative;
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  column-gap: 10px;
-  padding: 9px 0 9px 14px;
-  border-left: 2px solid rgba(247,239,224,.14);
-}
-
-.bridge-event::before {
-  content: "";
-  position: absolute;
-  left: -5px;
-  top: 17px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--side-muted);
-}
-
-.bridge-event span {
   color: var(--side-muted);
-  font-size: 11px;
-  grid-row: 1 / span 2;
-  font-variant-numeric: tabular-nums;
-}
-
-.bridge-event strong {
-  color: var(--lime);
   font-size: 12px;
-}
-
-.bridge-event.thinking strong,
-.bridge-event.thinking::before { color: var(--blue); background: var(--blue); }
-.bridge-event.command strong,
-.bridge-event.command::before { color: var(--amber); background: var(--amber); }
-.bridge-event.stream strong,
-.bridge-event.stream::before { color: var(--lime); background: var(--lime); }
-.bridge-event.reply strong,
-.bridge-event.reply::before { color: var(--green); background: var(--green); }
-.bridge-event.error strong { color: var(--red); }
-.bridge-event.error::before { background: var(--red); }
-
-.bridge-event p {
-  margin: 0;
-  color: var(--side-text);
-  font-size: 13px;
-  line-height: 1.45;
 }
 
 @media (max-width: 620px) {
