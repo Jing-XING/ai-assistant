@@ -552,6 +552,12 @@ h1 {
   cursor: pointer;
 }
 
+.theme-button:disabled,
+.ghost-button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
 .theme-button.active, .theme-button:hover {
   background: var(--ink);
   color: var(--paper);
@@ -747,6 +753,7 @@ h1 {
 }
 
 .bridge-event.reply strong { color: var(--blue); }
+.bridge-event.stream strong { color: var(--amber); }
 .bridge-event.error strong { color: var(--red); }
 
 .bridge-event p {

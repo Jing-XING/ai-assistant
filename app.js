@@ -75,12 +75,20 @@ function bindNotifications() {
 
 
 let inboxMessages = [];
+let inboxFetchInFlight = false;
+let inboxFetchQueued = false;
+let inboxRefreshTimer = null;
 
 function escapeHtml(value) {
   return String(value || "").replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 }
 
 async function fetchInbox() {
+  if (inboxFetchInFlight) {
+    inboxFetchQueued = true;
+    return;
+  }
+  inboxFetchInFlight = true;
   try {
     const response = await fetch('/api/inbox', { cache: 'no-store' });
     if (!response.ok) throw new Error('inbox unavailable');
@@ -88,8 +96,19 @@ async function fetchInbox() {
     inboxMessages = data.messages;
   } catch (error) {
     inboxMessages = [];
+  } finally {
+    inboxFetchInFlight = false;
   }
   renderInbox();
+  if (inboxFetchQueued) {
+    inboxFetchQueued = false;
+    scheduleInboxRefresh();
+  }
+}
+
+function scheduleInboxRefresh() {
+  clearTimeout(inboxRefreshTimer);
+  inboxRefreshTimer = setTimeout(fetchInbox, 350);
 }
 
 function renderInbox() {
@@ -104,10 +123,10 @@ function renderInbox() {
       <div class="inbox-status ${msg.status}">${msg.status === 'processing' ? '处理中' : msg.status === 'done' ? '已完成' : '待处理'}</div>
       <p>${escapeHtml(msg.content)}</p>
       <div class="bridge-events">
-        ${(msg.events || []).map(event => `
+        ${(msg.events || []).slice(-24).map(event => `
           <div class="bridge-event ${escapeHtml(event.event_type)}">
             <span>${escapeHtml(event.created_at)}</span>
-            <strong>${event.event_type === 'reply' ? '回复' : event.event_type === 'received' ? '收到' : event.event_type === 'error' ? '异常' : '进度'}</strong>
+            <strong>${event.event_type === 'reply' ? '回复' : event.event_type === 'stream' ? '输出' : event.event_type === 'received' ? '收到' : event.event_type === 'error' ? '异常' : '进度'}</strong>
             <p>${escapeHtml(event.content)}</p>
           </div>
         `).join('')}
@@ -133,19 +152,25 @@ function renderInbox() {
 function bindInbox() {
   document.querySelector('#sendInbox')?.addEventListener('click', async () => {
     const input = document.querySelector('#inboxInput');
+    const button = document.querySelector('#sendInbox');
     const content = input?.value.trim();
-    if (!content) return;
-    const response = await fetch('/api/inbox', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ content }),
-    });
-    if (response.ok) {
-      input.value = '';
-      const data = await response.json();
-      inboxMessages = data.messages;
-      renderInbox();
-      showReminder({ title: '已发送到 Codex 收件箱', body: '我后续会读取并处理。' });
+    if (!content || button?.disabled) return;
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch('/api/inbox', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      if (response.ok) {
+        input.value = '';
+        const data = await response.json();
+        inboxMessages = data.messages;
+        renderInbox();
+        showReminder({ title: '已发送到 Codex 收件箱', body: '我后续会读取并处理。' });
+      }
+    } finally {
+      if (button) button.disabled = false;
     }
   });
   document.querySelector('#refreshInbox')?.addEventListener('click', fetchInbox);
@@ -154,7 +179,7 @@ function bindInbox() {
 function bindInboxStream() {
   if (!("EventSource" in window)) return;
   const source = new EventSource('/api/inbox/stream');
-  source.onmessage = () => fetchInbox();
+  source.onmessage = () => scheduleInboxRefresh();
   source.onerror = () => {
     source.close();
     setTimeout(bindInboxStream, 5000);

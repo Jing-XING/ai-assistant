@@ -352,7 +352,7 @@ function runCodexForInbox(message) {
     if (event.type === 'item.completed' && event.item) {
       if (event.item.type === 'agent_message' && event.item.text) {
         finalReply = event.item.text.trim();
-        addBridgeEvent(message.id, 'reply', finalReply);
+        addBridgeEvent(message.id, 'stream', finalReply);
         return;
       }
       const label = event.item.type || 'item';
@@ -401,8 +401,7 @@ function runCodexForInbox(message) {
       return;
     }
 
-    if (!finalReply && fileReply) addBridgeEvent(message.id, 'reply', fileReply);
-    if (!finalReply && !fileReply) addBridgeEvent(message.id, 'reply', '已处理，但 Codex 没有返回文本。');
+    addBridgeEvent(message.id, 'reply', fileReply || finalReply || '已处理，但 Codex 没有返回文本。');
     setInboxStatus(message.id, 'done');
   });
 }
