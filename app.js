@@ -210,6 +210,13 @@ function bindChatDock() {
   document.querySelector('#chatDockToggle')?.addEventListener('click', () => setChatDock(true));
   document.querySelector('#openChatDock')?.addEventListener('click', () => setChatDock(true));
   document.querySelector('#closeChatDock')?.addEventListener('click', () => setChatDock(false));
+  document.addEventListener('pointerdown', event => {
+    const dock = document.querySelector('#chatDock');
+    if (!dock || dock.classList.contains('collapsed')) return;
+    if (dock.contains(event.target)) return;
+    if (event.target.closest('#openChatDock')) return;
+    setChatDock(false);
+  });
 }
 
 function bindInbox() {
