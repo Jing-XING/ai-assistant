@@ -157,18 +157,13 @@
         </section>
 
         <section class="page-view" data-page="bridge">
-            <section class="panel-block inbox-panel">
-              <div class="section-head compact">
-                <h2>给 Codex 留言</h2>
-                <span>操作桥</span>
-              </div>
-              <textarea id="inboxInput" class="inbox-input" rows="4" placeholder="把任务、想法、提醒直接写在这里..."></textarea>
-              <div class="inbox-actions">
-                <button class="theme-button" id="sendInbox" type="button">发送</button>
-                <button class="theme-button" id="refreshInbox" type="button">刷新</button>
-              </div>
-              <div class="inbox-list" id="inboxList"></div>
-            </section>
+          <section class="panel-block light-panel bridge-home">
+            <div class="section-head">
+              <h2>Codex 操作桥</h2>
+              <span>右侧浮窗</span>
+            </div>
+            <button class="ghost-button" id="openChatDock" type="button">打开聊天窗</button>
+          </section>
         </section>
 
         <section class="page-view" data-page="settings">
@@ -192,6 +187,26 @@
         </section>
       </main>
     </div>
+    <section class="panel-block inbox-panel chat-dock collapsed" id="chatDock" aria-label="Codex 浮动聊天窗">
+      <button class="chat-tab" id="chatDockToggle" type="button">
+        <span>Codex</span>
+        <strong id="chatDockCount">0</strong>
+      </button>
+      <div class="chat-dock-body">
+        <div class="section-head compact chat-head">
+          <h2>给 Codex 留言</h2>
+          <button class="inbox-done" id="closeChatDock" type="button">收起</button>
+        </div>
+        <div class="inbox-list" id="inboxList"></div>
+        <div class="chat-composer">
+          <textarea id="inboxInput" class="inbox-input" rows="3" placeholder="把任务、想法、提醒直接写在这里..."></textarea>
+          <div class="inbox-actions">
+            <button class="theme-button" id="sendInbox" type="button">发送</button>
+            <button class="theme-button" id="refreshInbox" type="button">刷新</button>
+          </div>
+        </div>
+      </div>
+    </section>
     <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
   </body>

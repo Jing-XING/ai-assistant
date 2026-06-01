@@ -669,14 +669,102 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin: 10px 0 12px;
+  margin: 10px 0 0;
 }
 
 .inbox-list {
   display: grid;
   gap: 8px;
-  max-height: 280px;
+  min-height: 0;
   overflow: auto;
+}
+
+.bridge-home {
+  max-width: 620px;
+}
+
+.chat-dock {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 18;
+  width: min(520px, calc(100vw - 28px));
+  height: min(760px, calc(100vh - 36px));
+  display: grid;
+  grid-template-rows: 1fr;
+  padding: 0;
+  overflow: hidden;
+  transition: transform .22s ease, width .22s ease, height .22s ease;
+}
+
+.chat-dock-body {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 14px;
+}
+
+.chat-head {
+  margin-bottom: 0;
+}
+
+.chat-composer {
+  position: sticky;
+  bottom: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(247,239,224,.14);
+  background: var(--side-panel);
+}
+
+.chat-tab {
+  display: none;
+  border: 1px solid var(--line);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 8px 0 0 8px;
+  padding: 12px 10px;
+  min-width: 58px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.chat-tab span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.chat-tab strong {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+}
+
+.chat-dock.collapsed {
+  width: 58px;
+  height: 148px;
+  right: 0;
+  bottom: 22vh;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.chat-dock.collapsed .chat-tab {
+  display: grid;
+  place-items: center;
+}
+
+.chat-dock.collapsed .chat-dock-body {
+  display: none;
 }
 
 .inbox-item {
@@ -842,4 +930,21 @@ h1 {
   color: var(--side-text);
   font-size: 13px;
   line-height: 1.45;
+}
+
+@media (max-width: 620px) {
+  .chat-dock {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    height: min(660px, calc(100vh - 16px));
+  }
+  .chat-dock.collapsed {
+    left: auto;
+    right: 0;
+    bottom: 18vh;
+    width: 54px;
+    height: 138px;
+  }
 }

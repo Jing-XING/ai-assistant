@@ -8,6 +8,7 @@ const themes = [
 const themeKey = "task-deck-theme-v1";
 let currentTheme = localStorage.getItem(themeKey) || "deepsea";
 document.body.dataset.theme = currentTheme;
+const chatDockKey = "task-deck-chat-dock-open-v1";
 
 
 const reminders = [
@@ -129,6 +130,8 @@ function processEventView(event) {
 
 function renderInbox() {
   const list = document.querySelector('#inboxList');
+  const count = document.querySelector('#chatDockCount');
+  if (count) count.textContent = String(inboxMessages.filter(msg => msg.status !== 'done').length);
   if (!list) return;
   if (!inboxMessages.length) {
     list.innerHTML = '<div class="inbox-item"><p>暂无留言。这里写下来的内容会进 SQLite，Codex 处理时会显示流程。</p></div>';
@@ -138,14 +141,15 @@ function renderInbox() {
     const events = msg.events || [];
     const finalReply = [...events].reverse().find(event => event.event_type === 'reply');
     const finalError = [...events].reverse().find(event => event.event_type === 'error');
-    const result = finalReply || finalError;
+    const latestStream = [...events].reverse().find(event => event.event_type === 'stream');
+    const result = finalReply || finalError || (msg.status === 'processing' ? latestStream : null);
     return `
     <article class="inbox-item ${msg.status === 'done' ? 'done' : ''}">
       <div class="inbox-status ${msg.status}">${msg.status === 'processing' ? '处理中' : msg.status === 'done' ? '已完成' : '待处理'}</div>
       <p class="inbox-question">${escapeHtml(msg.content)}</p>
       ${result ? `
         <div class="operation-result ${result.event_type === 'error' ? 'error' : ''}">
-          <span>${result.event_type === 'error' ? '操作异常' : '操作结果'}</span>
+          <span>${result.event_type === 'error' ? '操作异常' : result.event_type === 'stream' ? '实时输出' : '操作结果'}</span>
           <p>${escapeHtml(result.content)}</p>
         </div>
       ` : msg.status === 'processing' ? `
@@ -188,6 +192,21 @@ function renderInbox() {
       fetchInbox();
     });
   });
+}
+
+function setChatDock(open) {
+  const dock = document.querySelector('#chatDock');
+  if (!dock) return;
+  dock.classList.toggle('collapsed', !open);
+  localStorage.setItem(chatDockKey, open ? '1' : '0');
+  if (open) setTimeout(() => document.querySelector('#inboxInput')?.focus(), 80);
+}
+
+function bindChatDock() {
+  setChatDock(localStorage.getItem(chatDockKey) === '1');
+  document.querySelector('#chatDockToggle')?.addEventListener('click', () => setChatDock(true));
+  document.querySelector('#openChatDock')?.addEventListener('click', () => setChatDock(true));
+  document.querySelector('#closeChatDock')?.addEventListener('click', () => setChatDock(false));
 }
 
 function bindInbox() {
@@ -554,6 +573,7 @@ window.addEventListener("hashchange", () => {
 fetchTasks().then(render);
 bindPomodoro();
 bindNotifications();
+bindChatDock();
 bindInbox();
 bindInboxStream();
 fetchInbox();
