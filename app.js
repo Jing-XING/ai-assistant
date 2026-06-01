@@ -112,6 +112,14 @@ function scheduleInboxRefresh() {
   inboxRefreshTimer = setTimeout(fetchInbox, 350);
 }
 
+function scrollInboxToBottom() {
+  const list = document.querySelector('#inboxList');
+  if (!list) return;
+  requestAnimationFrame(() => {
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
 function processEventView(event) {
   const content = String(event.content || "");
   if (event.event_type === "received") return { label: "收到", kind: "received", content };
@@ -202,7 +210,12 @@ function setChatDock(open) {
   if (!dock) return;
   dock.classList.toggle('collapsed', !open);
   localStorage.setItem(chatDockKey, open ? '1' : '0');
-  if (open) setTimeout(() => document.querySelector('#inboxInput')?.focus(), 80);
+  if (open) {
+    setTimeout(() => {
+      document.querySelector('#inboxInput')?.focus();
+      scrollInboxToBottom();
+    }, 80);
+  }
 }
 
 function bindChatDock() {
