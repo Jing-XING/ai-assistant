@@ -687,14 +687,53 @@ h1 {
   background: rgba(255,255,255,.04);
 }
 
-.inbox-item.done {
-  opacity: .55;
-}
-
 .inbox-item p {
   margin: 0 0 8px;
   color: var(--side-text);
   line-height: 1.45;
+}
+
+.inbox-item.done .bridge-events {
+  opacity: .62;
+}
+
+.inbox-question {
+  font-weight: 700;
+}
+
+.operation-result {
+  margin: 10px 0 12px;
+  padding: 10px 11px;
+  border: 1px solid color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+}
+
+.operation-result span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.operation-result p {
+  margin: 0;
+  color: var(--side-text);
+}
+
+.operation-result.pending {
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+}
+
+.operation-result.error {
+  border-color: color-mix(in srgb, var(--red) 55%, transparent);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+}
+
+.operation-result.error span {
+  color: var(--red);
 }
 
 .inbox-meta {

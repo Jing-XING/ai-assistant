@@ -118,12 +118,28 @@ function renderInbox() {
     list.innerHTML = '<div class="inbox-item"><p>暂无留言。这里写下来的内容会进 SQLite，Codex 处理时会显示流程。</p></div>';
     return;
   }
-  list.innerHTML = inboxMessages.map(msg => `
+  list.innerHTML = inboxMessages.map(msg => {
+    const events = msg.events || [];
+    const finalReply = [...events].reverse().find(event => event.event_type === 'reply');
+    const finalError = [...events].reverse().find(event => event.event_type === 'error');
+    const result = finalReply || finalError;
+    return `
     <article class="inbox-item ${msg.status === 'done' ? 'done' : ''}">
       <div class="inbox-status ${msg.status}">${msg.status === 'processing' ? '处理中' : msg.status === 'done' ? '已完成' : '待处理'}</div>
-      <p>${escapeHtml(msg.content)}</p>
+      <p class="inbox-question">${escapeHtml(msg.content)}</p>
+      ${result ? `
+        <div class="operation-result ${result.event_type === 'error' ? 'error' : ''}">
+          <span>${result.event_type === 'error' ? '操作异常' : '操作结果'}</span>
+          <p>${escapeHtml(result.content)}</p>
+        </div>
+      ` : msg.status === 'processing' ? `
+        <div class="operation-result pending">
+          <span>处理中</span>
+          <p>Codex 正在处理，结果会自动显示在这里。</p>
+        </div>
+      ` : ''}
       <div class="bridge-events">
-        ${(msg.events || []).slice(-24).map(event => `
+        ${events.slice(-24).map(event => `
           <div class="bridge-event ${escapeHtml(event.event_type)}">
             <span>${escapeHtml(event.created_at)}</span>
             <strong>${event.event_type === 'reply' ? '回复' : event.event_type === 'stream' ? '输出' : event.event_type === 'received' ? '收到' : event.event_type === 'error' ? '异常' : '进度'}</strong>
@@ -136,7 +152,7 @@ function renderInbox() {
         <button class="inbox-done" data-inbox-done="${msg.id}" type="button">${msg.status === 'done' ? '已处理' : '标记处理'}</button>
       </div>
     </article>
-  `).join('');
+  `}).join('');
   list.querySelectorAll('[data-inbox-done]').forEach(button => {
     button.addEventListener('click', async () => {
       await fetch(`/api/inbox/${encodeURIComponent(button.dataset.inboxDone)}`, {
