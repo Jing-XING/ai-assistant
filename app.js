@@ -400,6 +400,7 @@ let activePage = location.hash.replace("#", "") || "overview";
 const pages = [
   { id: "overview", label: "总览", short: "HOME", title: "今日任务展示", kicker: "PERSONAL OPERATING BOARD" },
   { id: "tasks", label: "任务", short: "TASK", title: "任务流", kicker: "TRACKED WORK" },
+  { id: "archive", label: "归档", short: "ARC", title: "已完成归档", kicker: "COMPLETED WORK" },
   { id: "focus", label: "专注", short: "FOCUS", title: "番茄钟与时间块", kicker: "ONE SLOT ONE TASK" },
   { id: "bridge", label: "Codex", short: "CODEX", title: "Codex 操作桥", kicker: "MESSAGE AND PROCESS" },
   { id: "settings", label: "设置", short: "SETUP", title: "提醒与机器人", kicker: "LOCAL CONTROL" },
@@ -437,7 +438,11 @@ function renderPageNav() {
   document.querySelector("#pageKicker").textContent = current.kicker;
 
   pageNav.innerHTML = pages.map(page => {
-    const count = page.id === "tasks" ? tasks.filter(task => !task.done).length : page.short;
+    const count = page.id === "tasks"
+      ? tasks.filter(task => !task.archived_at && !task.done).length
+      : page.id === "archive"
+        ? tasks.filter(task => task.archived_at).length
+        : page.short;
     return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${page.label}</span><strong>${count}</strong></button>`;
   }).join("");
 
@@ -468,13 +473,15 @@ function renderTrackFilters() {
 
 function taskCardHtml(task) {
   const isDone = Boolean(task.done);
-  return `<article class="task-card ${isDone ? "done" : ""}" data-task-card="${task.id}">
+  const isArchived = Boolean(task.archived_at);
+  return `<article class="task-card ${isDone ? "done" : ""} ${isArchived ? "archived" : ""}" data-task-card="${task.id}">
     <button class="check" data-id="${task.id}" type="button" aria-label="切换完成状态">${isDone ? "✓" : ""}</button>
     <div>
       <p class="task-title">${escapeHtml(task.title)}</p>
       <div class="task-meta">
         <span class="badge">${trackLabel(task.track)}</span>
         <span class="badge">${escapeHtml(task.date)}</span>
+        ${isArchived ? `<span class="badge">归档 ${escapeHtml(task.archived_at)}</span>` : ""}
         <span>${escapeHtml(task.note)}</span>
       </div>
     </div>
@@ -503,17 +510,32 @@ function bindTaskCards(root = document) {
 }
 
 function renderTasks() {
-  const visible = active === "all" ? tasks : tasks.filter(t => t.track === active);
+  const activeTasks = tasks.filter(t => !t.archived_at);
+  const visible = active === "all" ? activeTasks : activeTasks.filter(t => t.track === active);
   activeTrackLabel.textContent = active === "all" ? "全部轨道" : trackLabel(active);
   taskList.innerHTML = visible.map(taskCardHtml).join("");
   bindTaskCards(taskList);
+}
+
+function renderArchive() {
+  const archiveList = document.querySelector("#archiveList");
+  const archiveCount = document.querySelector("#archiveCount");
+  if (!archiveList) return;
+  const archived = tasks
+    .filter(task => task.archived_at)
+    .sort((a, b) => String(b.archived_at).localeCompare(String(a.archived_at)));
+  if (archiveCount) archiveCount.textContent = `${archived.length} 项`;
+  archiveList.innerHTML = archived.length
+    ? archived.map(taskCardHtml).join("")
+    : `<article class="task-card empty"><div><p class="task-title">暂无已完成归档</p><div class="task-meta"><span>勾选完成的任务会自动进入这里。</span></div></div></article>`;
+  bindTaskCards(archiveList);
 }
 
 function renderOverview() {
   const overviewTasks = document.querySelector("#overviewTasks");
   if (overviewTasks) {
     const priorityTasks = tasks
-      .filter(task => !task.done)
+      .filter(task => !task.done && !task.archived_at)
       .sort((a, b) => (a.p || "P2").localeCompare(b.p || "P2") || (a.sort_order || 999) - (b.sort_order || 999))
       .slice(0, 6);
     overviewTasks.innerHTML = priorityTasks.map(taskCardHtml).join("");
@@ -528,11 +550,12 @@ function renderOverview() {
 }
 
 function renderStats() {
+  const activeTasks = tasks.filter(t => !t.archived_at);
   const total = tasks.length;
-  const doneCount = tasks.filter(t => t.done).length;
-  const open = total - doneCount;
+  const doneCount = tasks.filter(t => t.archived_at).length;
+  const open = activeTasks.filter(t => !t.done).length;
   document.querySelector("#openCount").textContent = String(open);
-  document.querySelector("#doneRatio").textContent = `${Math.round(doneCount / total * 100)}%`;
+  document.querySelector("#doneRatio").textContent = total ? `${Math.round(doneCount / total * 100)}%` : "0%";
 }
 
 function renderTimeline() {
@@ -614,6 +637,7 @@ function render() {
   renderTrackFilters();
   renderOverview();
   renderTasks();
+  renderArchive();
   renderStats();
   renderTimeline();
   renderDeadline();

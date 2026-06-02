@@ -60,6 +60,7 @@ function initDb() {
       due_at TEXT NOT NULL DEFAULT '',
       done INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0,
+      archived_at TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -92,6 +93,15 @@ function initDb() {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+  `);
+  const taskColumns = db.prepare('PRAGMA table_info(tasks)').all().map(column => column.name);
+  if (!taskColumns.includes('archived_at')) {
+    db.exec(`ALTER TABLE tasks ADD COLUMN archived_at TEXT NOT NULL DEFAULT ''`);
+  }
+  db.exec(`
+    UPDATE tasks
+    SET archived_at = COALESCE(NULLIF(updated_at, ''), CURRENT_TIMESTAMP)
+    WHERE done = 1 AND archived_at = ''
   `);
   const count = db.prepare('SELECT COUNT(*) AS count FROM tasks').get().count;
   if (count === 0) {
@@ -140,10 +150,10 @@ function readBody(req) {
 
 function rows() {
   return db.prepare(`
-    SELECT id, track, priority AS p, title, task_date AS date, note, due_at AS due, done, sort_order
+    SELECT id, track, priority AS p, title, task_date AS date, note, due_at AS due, done, sort_order, archived_at
     FROM tasks
     ORDER BY sort_order ASC, created_at ASC
-  `).all().map(row => ({ ...row, done: Boolean(row.done) }));
+  `).all().map(row => ({ ...row, done: Boolean(row.done), archived: Boolean(row.archived_at) }));
 }
 
 
@@ -561,7 +571,7 @@ async function handleApi(req, res, url) {
     const current = db.prepare('SELECT id FROM tasks WHERE id = ?').get(id);
     if (!current) return json(res, 404, { error: 'task not found' });
 
-    const allowed = ['track', 'priority', 'title', 'task_date', 'note', 'due_at', 'done', 'sort_order'];
+    const allowed = ['track', 'priority', 'title', 'task_date', 'note', 'due_at', 'done', 'sort_order', 'archived_at'];
     const updates = [];
     const values = [];
     for (const key of allowed) {
@@ -569,6 +579,10 @@ async function handleApi(req, res, url) {
         updates.push(`${key} = ?`);
         values.push(key === 'done' ? (body[key] ? 1 : 0) : body[key]);
       }
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'done') && !Object.prototype.hasOwnProperty.call(body, 'archived_at')) {
+      updates.push('archived_at = ?');
+      values.push(body.done ? localIso(new Date()) : '');
     }
     if (!updates.length) return json(res, 400, { error: 'no valid fields' });
     updates.push('updated_at = CURRENT_TIMESTAMP');
@@ -590,7 +604,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/reset') {
-    db.prepare('UPDATE tasks SET done = 0, updated_at = CURRENT_TIMESTAMP').run();
+    db.prepare(`UPDATE tasks SET done = 0, archived_at = '', updated_at = CURRENT_TIMESTAMP`).run();
     return json(res, 200, { tasks: rows() });
   }
 

@@ -66,6 +66,10 @@
             <span>Tasks</span>
             <strong>任务流</strong>
           </button>
+          <button class="jump-tile" data-page-link="archive" type="button">
+            <span>Archive</span>
+            <strong>归档</strong>
+          </button>
           <button class="jump-tile" data-page-link="focus" type="button">
             <span>Focus</span>
             <strong>番茄钟</strong>
@@ -113,6 +117,16 @@
             </div>
             <div class="task-list" id="taskList"></div>
           </div>
+        </section>
+
+        <section class="page-view" data-page="archive">
+          <section class="panel-block light-panel">
+            <div class="section-head">
+              <h2>已完成归档</h2>
+              <span id="archiveCount">0 项</span>
+            </div>
+            <div class="task-list" id="archiveList"></div>
+          </section>
         </section>
 
         <section class="page-view" data-page="focus">
