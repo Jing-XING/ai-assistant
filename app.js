@@ -1,12 +1,13 @@
 const themes = [
+  { id: "air", label: "系统浅色" },
   { id: "paper", label: "纸墨" },
   { id: "terminal", label: "终端绿" },
   { id: "deepsea", label: "金融深海" },
   { id: "morning", label: "晨间" },
   { id: "slate", label: "冷灰" },
 ];
-const themeKey = "task-deck-theme-v1";
-let currentTheme = localStorage.getItem(themeKey) || "deepsea";
+const themeKey = "task-deck-theme-v2";
+let currentTheme = localStorage.getItem(themeKey) || "air";
 document.body.dataset.theme = currentTheme;
 const chatDockKey = "task-deck-chat-dock-open-v1";
 
