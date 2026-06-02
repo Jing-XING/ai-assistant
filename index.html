@@ -76,7 +76,7 @@
           </button>
           <button class="jump-tile" data-page-link="settings" type="button">
             <span>Setup</span>
-            <strong>提醒/主题</strong>
+            <strong>提醒/机器人</strong>
           </button>
         </section>
 
@@ -162,7 +162,10 @@
               <h2>Codex 操作桥</h2>
               <span>右侧浮窗</span>
             </div>
-            <button class="ghost-button" id="openChatDock" type="button">打开聊天窗</button>
+            <div class="bridge-actions">
+              <button class="ghost-button" id="openChatDock" type="button">打开聊天窗</button>
+              <span class="setting-note">网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。</span>
+            </div>
           </section>
         </section>
 
@@ -175,6 +178,20 @@
               </div>
               <button class="ghost-button" id="enableNotify" type="button">开启提醒</button>
               <p class="setting-note">所有带具体时间的任务默认提前 10 分钟提醒；网页保持打开时，浏览器提醒和声音可用。</p>
+            </section>
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2>企业微信机器人</h2>
+                <span id="weworkStatusText">检测中</span>
+              </div>
+              <div class="wework-control">
+                <label class="switch-row">
+                  <input id="weworkBridgeToggle" type="checkbox" />
+                  <span>同步 Codex 关键结果</span>
+                </label>
+                <button class="ghost-button" id="testWeWork" type="button">发送测试</button>
+              </div>
+              <p class="setting-note" id="weworkHint">推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。</p>
             </section>
             <section class="panel-block light-panel">
               <div class="section-head">

@@ -1050,3 +1050,111 @@ h1 {
     height: 138px;
   }
 }
+
+.theme-button {
+  background: color-mix(in srgb, var(--panel) 84%, #fff);
+  padding: 8px 12px;
+  box-shadow: 0 6px 16px rgba(36, 39, 46, 0.04);
+}
+
+.theme-button.active,
+.theme-button:hover {
+  background: color-mix(in srgb, var(--ink) 88%, #fff);
+  color: #fff;
+  border-color: transparent;
+}
+
+.pomodoro-panel {
+  border-color: color-mix(in srgb, var(--lime) 22%, var(--line));
+}
+
+.pomodoro-face {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--lime) 7%, var(--panel));
+}
+
+.reminder-toast {
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ink) 92%, #fff);
+  color: #fff;
+}
+
+.inbox-input {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--side-panel) 88%, #fff);
+}
+
+.inbox-input:focus {
+  border-color: color-mix(in srgb, var(--blue) 42%, var(--line));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 12%, transparent);
+}
+
+.bridge-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.wework-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 12px;
+}
+
+.switch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.switch-row input {
+  appearance: none;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--muted) 18%, #fff);
+  box-shadow: inset 0 1px 2px rgba(36, 39, 46, .08);
+  position: relative;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.switch-row input::before {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  top: 1px;
+  left: 1px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(36, 39, 46, .16);
+  transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+}
+
+.switch-row input:checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.switch-row input:checked::before {
+  transform: translateX(20px);
+}
+
+.switch-row input:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 620px) {
+  .wework-control {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

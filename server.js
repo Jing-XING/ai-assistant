@@ -32,6 +32,7 @@ const CODEX_BIN = process.env.CODEX_BIN || 'codex';
 const CODEX_AUTO_EXEC = process.env.CODEX_AUTO_EXEC !== '0';
 const runningInboxJobs = new Set();
 const sseClients = new Set();
+const bridgePushTypes = new Set(['received', 'stream', 'reply', 'error']);
 
 const seedTasks = [
   ['cikm-entry', 'paper', 'P0', '再试 CIKM 2026 Short/Resource 注册入口', '2026-05-29', 'Short 摘要截止，北京时间', '2026-05-31 19:59', 0, 10],
@@ -203,6 +204,40 @@ async function sendWeWork(content) {
   return true;
 }
 
+function isWeWorkBridgeEnabled() {
+  return getState('wework_bridge_enabled') !== '0';
+}
+
+function truncateText(text, length = 900) {
+  const value = String(text || '').trim();
+  return value.length > length ? `${value.slice(0, length)}...` : value;
+}
+
+function bridgePushTitle(eventType) {
+  if (eventType === 'received') return '收到网页留言';
+  if (eventType === 'stream') return 'Codex 中间结果';
+  if (eventType === 'reply') return 'Codex 处理完成';
+  if (eventType === 'error') return 'Codex 处理异常';
+  return 'Codex 进度';
+}
+
+function inboxContent(id) {
+  return db.prepare('SELECT content FROM inbox WHERE id = ?').get(id)?.content || '';
+}
+
+function mirrorBridgeEventToWeWork(inboxId, eventType, content) {
+  if (!WEWORK_WEBHOOK_URL || !isWeWorkBridgeEnabled() || !bridgePushTypes.has(eventType)) return;
+  const question = truncateText(inboxContent(inboxId), 220);
+  const body = [
+    `【${bridgePushTitle(eventType)}】`,
+    question ? `问题：${question}` : '',
+    `内容：${truncateText(content)}`,
+  ].filter(Boolean).join('\n');
+  sendWeWork(body).catch(error => {
+    console.error(`[wework bridge] ${error.message}`);
+  });
+}
+
 async function scanReminders() {
   ensureAllReminders();
   const now = localIso(new Date());
@@ -241,6 +276,7 @@ function addBridgeEvent(inboxId, eventType, content) {
     VALUES (?, ?, ?)
   `).run(inboxId, eventType, content);
   notifySse({ type: 'bridge_event', inbox_id: inboxId });
+  mirrorBridgeEventToWeWork(inboxId, eventType, content);
 }
 
 function inboxExists(id) {
@@ -489,6 +525,29 @@ async function handleApi(req, res, url) {
     const eventType = String(body.event_type || 'note').trim() || 'note';
     addBridgeEvent(id, eventType, content);
     return json(res, 200, { messages: inboxRows() });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/wework/status') {
+    return json(res, 200, {
+      configured: Boolean(WEWORK_WEBHOOK_URL),
+      bridge_enabled: isWeWorkBridgeEnabled(),
+    });
+  }
+
+  if (req.method === 'PATCH' && url.pathname === '/api/wework/status') {
+    const body = await readBody(req);
+    const enabled = body.bridge_enabled ? '1' : '0';
+    setState('wework_bridge_enabled', enabled);
+    return json(res, 200, {
+      configured: Boolean(WEWORK_WEBHOOK_URL),
+      bridge_enabled: enabled === '1',
+    });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/wework/test') {
+    if (!WEWORK_WEBHOOK_URL) return json(res, 400, { error: 'wework webhook not configured' });
+    await sendWeWork('企业微信机器人测试：任务看板已接通。');
+    return json(res, 200, { ok: true });
   }
 
   if (req.method === 'GET' && url.pathname === '/api/tasks') {

@@ -80,6 +80,7 @@ let inboxMessages = [];
 let inboxFetchInFlight = false;
 let inboxFetchQueued = false;
 let inboxRefreshTimer = null;
+let weworkStatus = { configured: false, bridge_enabled: true };
 
 function escapeHtml(value) {
   return String(value || "").replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
@@ -290,6 +291,65 @@ function bindInboxStream() {
   };
 }
 
+async function fetchWeWorkStatus() {
+  try {
+    const response = await fetch('/api/wework/status', { cache: 'no-store' });
+    if (!response.ok) throw new Error('wework status unavailable');
+    weworkStatus = await response.json();
+  } catch (error) {
+    weworkStatus = { configured: false, bridge_enabled: false };
+  }
+  renderWeWorkStatus();
+}
+
+function renderWeWorkStatus() {
+  const text = document.querySelector('#weworkStatusText');
+  const toggle = document.querySelector('#weworkBridgeToggle');
+  const test = document.querySelector('#testWeWork');
+  const hint = document.querySelector('#weworkHint');
+  if (text) text.textContent = weworkStatus.configured ? '已配置' : '未配置';
+  if (toggle) {
+    toggle.checked = Boolean(weworkStatus.bridge_enabled);
+    toggle.disabled = !weworkStatus.configured;
+  }
+  if (test) test.disabled = !weworkStatus.configured;
+  if (hint) {
+    hint.textContent = weworkStatus.configured
+      ? '推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。'
+      : '未检测到企业微信 webhook 配置，先在 .env 中配置 WEWORK_WEBHOOK_URL。';
+  }
+}
+
+function bindWeWork() {
+  document.querySelector('#weworkBridgeToggle')?.addEventListener('change', async event => {
+    const enabled = event.target.checked;
+    const response = await fetch('/api/wework/status', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ bridge_enabled: enabled }),
+    });
+    if (response.ok) {
+      weworkStatus = await response.json();
+      renderWeWorkStatus();
+      showReminder({ title: enabled ? '企业微信同步已开启' : '企业微信同步已关闭', body: '设置已保存到本地数据库。' });
+    }
+  });
+
+  document.querySelector('#testWeWork')?.addEventListener('click', async () => {
+    const button = document.querySelector('#testWeWork');
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch('/api/wework/test', { method: 'POST' });
+      showReminder({
+        title: response.ok ? '测试消息已发送' : '测试消息发送失败',
+        body: response.ok ? '去企业微信里看一下机器人消息。' : '检查 webhook 配置或网络。',
+      });
+    } finally {
+      if (button) button.disabled = !weworkStatus.configured;
+    }
+  });
+}
+
 const tracks = [
   { id: "all", label: "全部", short: "ALL" },
   { id: "paper", label: "论文", short: "PAPER" },
@@ -342,7 +402,7 @@ const pages = [
   { id: "tasks", label: "任务", short: "TASK", title: "任务流", kicker: "TRACKED WORK" },
   { id: "focus", label: "专注", short: "FOCUS", title: "番茄钟与时间块", kicker: "ONE SLOT ONE TASK" },
   { id: "bridge", label: "Codex", short: "CODEX", title: "Codex 操作桥", kicker: "MESSAGE AND PROCESS" },
-  { id: "settings", label: "设置", short: "SETUP", title: "提醒与配色", kicker: "LOCAL CONTROL" },
+  { id: "settings", label: "设置", short: "SETUP", title: "提醒与机器人", kicker: "LOCAL CONTROL" },
 ];
 
 const pageNav = document.querySelector("#pageNav");
@@ -620,7 +680,9 @@ bindNotifications();
 bindChatDock();
 bindInbox();
 bindInboxStream();
+bindWeWork();
 fetchInbox();
+fetchWeWorkStatus();
 tickClock();
 checkReminders();
 renderPomodoro();
