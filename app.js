@@ -2,6 +2,7 @@ const i18n = {
   zh: {
     appTitle: "个人任务指挥台",
     languageToggle: "EN",
+    languageState: "中文",
     beijingTime: "北京时间",
     nearestDdl: "最近 DDL",
     calculating: "计算中",
@@ -14,18 +15,18 @@ const i18n = {
     triggerOnly: "条件触发，不全天盯盘",
     trainingRate: "运动频率",
     trainingRateNote: "羽毛球一次，健身一次",
-    tasks: "任务流",
+    tasks: "任务",
     archive: "归档",
     pomodoro: "番茄钟",
     bridge: "操作桥",
-    remindersBot: "提醒/机器人",
+    remindersBot: "设置",
     todayMainline: "今日主线",
     priority: "优先级",
     timeBlocks: "时间块",
     oneSlotOneTask: "单时段单任务",
     resetChecks: "重置勾选",
     allTracks: "全部轨道",
-    completedArchive: "已完成归档",
+    completedArchive: "归档",
     itemCount: count => `${count} 项`,
     focus: "专注",
     break: "休息",
@@ -41,7 +42,7 @@ const i18n = {
     principleMarket: "股票只在固定窗口与触发条件下处理。",
     principleCareer: "求职每周固定推进，不挤占论文主块。",
     principleBody: "运动是恢复，不加码成负担。",
-    codexBridge: "Codex 操作桥",
+    codexBridge: "Codex",
     rightDock: "右侧浮窗",
     openChat: "打开聊天窗",
     bridgeHint: "网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。",
@@ -57,8 +58,10 @@ const i18n = {
     sendTest: "发送测试",
     weworkHintOn: "推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。",
     weworkHintOff: "未检测到企业微信 webhook 配置，先在 .env 中配置 WEWORK_WEBHOOK_URL。",
-    colors: "配色",
+    colors: "外观",
     theme: "主题",
+    language: "语言",
+    display: "显示",
     collapseRail: "收起侧边栏",
     expandRail: "展开侧边栏",
     resizeRail: "调节侧边栏宽度",
@@ -117,17 +120,17 @@ const i18n = {
     pageBridge: "Codex",
     pageSettings: "设置",
     titleOverview: "今日",
-    titleTasks: "任务流",
-    titleArchive: "已完成归档",
-    titleFocus: "番茄钟与时间块",
-    titleBridge: "Codex 操作桥",
-    titleSettings: "提醒与机器人",
+    titleTasks: "任务",
+    titleArchive: "归档",
+    titleFocus: "专注",
+    titleBridge: "Codex",
+    titleSettings: "设置",
     kickerOverview: "看板",
-    kickerTasks: "任务追踪",
-    kickerArchive: "完成记录",
-    kickerFocus: "单时段单任务",
-    kickerBridge: "消息与处理过程",
-    kickerSettings: "本地设置",
+    kickerTasks: "追踪",
+    kickerArchive: "完成",
+    kickerFocus: "计时",
+    kickerBridge: "对话",
+    kickerSettings: "偏好",
     jumpTasksMeta: "任务",
     jumpArchiveMeta: "归档",
     jumpFocusMeta: "专注",
@@ -156,6 +159,7 @@ const i18n = {
   en: {
     appTitle: "Personal Task Deck",
     languageToggle: "中",
+    languageState: "English",
     beijingTime: "Beijing Time",
     nearestDdl: "Nearest DDL",
     calculating: "Calculating",
@@ -172,14 +176,14 @@ const i18n = {
     archive: "Archive",
     pomodoro: "Pomodoro",
     bridge: "Bridge",
-    remindersBot: "Reminders/Bot",
+    remindersBot: "Settings",
     todayMainline: "Today's Mainline",
     priority: "Priority",
     timeBlocks: "Time Blocks",
     oneSlotOneTask: "One slot, one task",
     resetChecks: "Reset Checks",
     allTracks: "All Tracks",
-    completedArchive: "Completed Archive",
+    completedArchive: "Archive",
     itemCount: count => `${count} items`,
     focus: "Focus",
     break: "Break",
@@ -211,8 +215,10 @@ const i18n = {
     sendTest: "Send Test",
     weworkHintOn: "Pushes received, live output, final result, and errors; detailed process stays on the web.",
     weworkHintOff: "No WeWork webhook detected. Configure WEWORK_WEBHOOK_URL in .env first.",
-    colors: "Colors",
+    colors: "Appearance",
     theme: "Theme",
+    language: "Language",
+    display: "Display",
     collapseRail: "Collapse Sidebar",
     expandRail: "Expand Sidebar",
     resizeRail: "Resize Sidebar",
@@ -271,17 +277,17 @@ const i18n = {
     pageBridge: "Codex",
     pageSettings: "Settings",
     titleOverview: "Today",
-    titleTasks: "Task Flow",
-    titleArchive: "Completed Archive",
-    titleFocus: "Pomodoro and Time Blocks",
-    titleBridge: "Codex Bridge",
-    titleSettings: "Reminders and Bot",
+    titleTasks: "Tasks",
+    titleArchive: "Archive",
+    titleFocus: "Focus",
+    titleBridge: "Codex",
+    titleSettings: "Settings",
     kickerOverview: "Board",
-    kickerTasks: "Tracked Work",
-    kickerArchive: "Completed Work",
-    kickerFocus: "One Slot One Task",
-    kickerBridge: "Message and Process",
-    kickerSettings: "Local Control",
+    kickerTasks: "Track",
+    kickerArchive: "Done",
+    kickerFocus: "Timer",
+    kickerBridge: "Chat",
+    kickerSettings: "Prefs",
     jumpTasksMeta: "Tasks",
     jumpArchiveMeta: "Archive",
     jumpFocusMeta: "Focus",
@@ -319,12 +325,12 @@ function t(key, ...args) {
 }
 
 const themes = [
-  { id: "air", labelKey: "themeAir" },
-  { id: "paper", labelKey: "themePaper" },
-  { id: "terminal", labelKey: "themeTerminal" },
-  { id: "deepsea", labelKey: "themeDeepsea" },
-  { id: "morning", labelKey: "themeMorning" },
-  { id: "slate", labelKey: "themeSlate" },
+  { id: "air", labelKey: "themeAir", swatch: "#f5f6f8" },
+  { id: "paper", labelKey: "themePaper", swatch: "#f4efe5" },
+  { id: "terminal", labelKey: "themeTerminal", swatch: "#07130f" },
+  { id: "deepsea", labelKey: "themeDeepsea", swatch: "#0b1220" },
+  { id: "morning", labelKey: "themeMorning", swatch: "#fbf5ec" },
+  { id: "slate", labelKey: "themeSlate", swatch: "#eef1f2" },
 ];
 const themeKey = "task-deck-theme-v2";
 let currentTheme = localStorage.getItem(themeKey) || "air";
@@ -761,8 +767,9 @@ function applyStaticText() {
   });
   const button = document.querySelector("#languageToggle");
   if (button) {
-    button.textContent = t("languageToggle");
+    button.innerHTML = `<span>${t("languageToggle")}</span><strong>${t("languageState")}</strong>`;
     button.setAttribute("aria-label", currentLang === "zh" ? "Switch to English" : "切换到中文");
+    button.title = currentLang === "zh" ? "Switch to English" : "切换到中文";
   }
 }
 
@@ -834,11 +841,15 @@ function bindRailControls() {
 
 
 function renderThemes() {
-  const pickers = [document.querySelector("#themePicker"), document.querySelector("#themePickerPanel")].filter(Boolean);
+  const pickers = [document.querySelector("#themePickerPanel")].filter(Boolean);
   if (!pickers.length) return;
-  const html = themes.map(theme => `<button class="theme-button ${currentTheme === theme.id ? "active" : ""}" data-theme="${theme.id}" type="button">${t(theme.labelKey)}</button>`).join("");
+  const html = themes.map(theme => `
+    <button class="theme-swatch ${currentTheme === theme.id ? "active" : ""}" data-theme="${theme.id}" type="button" aria-label="${t(theme.labelKey)}" title="${t(theme.labelKey)}">
+      <span style="--swatch:${theme.swatch}"></span>
+    </button>
+  `).join("");
   for (const picker of pickers) picker.innerHTML = html;
-  document.querySelectorAll("[data-theme]").forEach(button => {
+  document.querySelectorAll(".theme-swatch[data-theme]").forEach(button => {
     button.addEventListener("click", () => {
       currentTheme = button.dataset.theme;
       document.body.dataset.theme = currentTheme;
@@ -853,6 +864,7 @@ function renderPageNav() {
   const current = pages.find(page => page.id === activePage);
   document.querySelector("#pageTitle").textContent = t(current.titleKey);
   document.querySelector("#pageKicker").textContent = t(current.kickerKey);
+  document.body.dataset.page = activePage;
 
   pageNav.innerHTML = pages.map(page => {
     const count = page.id === "tasks"
@@ -873,6 +885,9 @@ function renderPageNav() {
 
   document.querySelectorAll("[data-page]").forEach(section => {
     section.classList.toggle("active", section.dataset.page === activePage);
+  });
+  document.querySelectorAll(".overview-only").forEach(element => {
+    element.hidden = activePage !== "overview";
   });
 }
 

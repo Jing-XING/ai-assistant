@@ -6,7 +6,7 @@
     <title>个人任务指挥台</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body data-page="overview">
     <div class="shell">
       <aside class="rail" aria-label="功能导航">
         <div class="mark">
@@ -28,20 +28,18 @@
       <main class="workspace">
         <header class="topline">
           <div>
-            <p class="kicker" id="pageKicker">PERSONAL OPERATING BOARD</p>
-            <h1 id="pageTitle">今日任务展示</h1>
+            <p class="kicker" id="pageKicker">看板</p>
+            <h1 id="pageTitle">今日</h1>
           </div>
           <div class="top-actions">
             <div class="today-card">
               <span data-i18n="beijingTime">北京时间</span>
               <strong id="clock">--:--</strong>
             </div>
-            <button class="language-toggle" id="languageToggle" type="button" aria-label="切换语言">EN</button>
-            <div class="theme-picker" id="themePicker" aria-label="配色主题"></div>
           </div>
         </header>
 
-        <section class="status-grid" aria-label="状态总览">
+        <section class="status-grid overview-only" aria-label="状态总览">
           <article class="status-tile urgent">
             <span data-i18n="nearestDdl">最近 DDL</span>
             <strong id="nextDeadline">CIKM Short</strong>
@@ -64,10 +62,10 @@
           </article>
         </section>
 
-        <section class="quick-jump" aria-label="快捷入口">
+        <section class="quick-jump overview-only" aria-label="快捷入口">
           <button class="jump-tile" data-page-link="tasks" type="button">
             <span data-i18n="jumpTasksMeta">任务</span>
-            <strong data-i18n="tasks">任务流</strong>
+            <strong data-i18n="tasks">任务</strong>
           </button>
           <button class="jump-tile" data-page-link="archive" type="button">
             <span data-i18n="jumpArchiveMeta">归档</span>
@@ -83,7 +81,7 @@
           </button>
           <button class="jump-tile" data-page-link="settings" type="button">
             <span data-i18n="jumpSettingsMeta">设置</span>
-            <strong data-i18n="remindersBot">提醒/机器人</strong>
+            <strong data-i18n="remindersBot">设置</strong>
           </button>
         </section>
 
@@ -115,7 +113,7 @@
           </section>
           <div class="task-column">
             <div class="section-head">
-              <h2 data-i18n="tasks">任务流</h2>
+              <h2 data-i18n="tasks">任务</h2>
               <span id="activeTrackLabel">全部轨道</span>
             </div>
             <div class="task-list" id="taskList"></div>
@@ -125,7 +123,7 @@
         <section class="page-view" data-page="archive">
           <section class="panel-block light-panel">
             <div class="section-head">
-              <h2 data-i18n="completedArchive">已完成归档</h2>
+              <h2 data-i18n="completedArchive">归档</h2>
               <span id="archiveCount">0 项</span>
             </div>
             <div class="task-list" id="archiveList"></div>
@@ -176,7 +174,7 @@
         <section class="page-view" data-page="bridge">
           <section class="panel-block light-panel bridge-home">
             <div class="section-head">
-              <h2 data-i18n="codexBridge">Codex 操作桥</h2>
+              <h2 data-i18n="codexBridge">Codex</h2>
               <span data-i18n="rightDock">右侧浮窗</span>
             </div>
             <div class="bridge-actions">
@@ -212,10 +210,17 @@
             </section>
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2 data-i18n="colors">配色</h2>
+                <h2 data-i18n="colors">外观</h2>
                 <span data-i18n="theme">主题</span>
               </div>
-              <div class="theme-picker settings-theme-picker" id="themePickerPanel" aria-label="配色主题"></div>
+              <div class="theme-picker settings-theme-picker" id="themePickerPanel" aria-label="主题"></div>
+            </section>
+            <section class="panel-block light-panel">
+              <div class="section-head">
+                <h2 data-i18n="language">语言</h2>
+                <span data-i18n="display">显示</span>
+              </div>
+              <button class="language-toggle settings-language-toggle" id="languageToggle" type="button" aria-label="切换语言"></button>
             </section>
           </div>
         </section>
