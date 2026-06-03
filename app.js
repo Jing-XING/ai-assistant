@@ -27,6 +27,14 @@ const i18n = {
     resetChecks: "重置勾选",
     allTracks: "全部轨道",
     completedArchive: "归档",
+    reports: "报告",
+    weeklyReport: "周报",
+    monthlyReport: "月报",
+    generateWeekly: "生成周报",
+    generateMonthly: "生成月报",
+    autoSummaryRule: "周五 18:00 / 月末 20:00 自动总结",
+    noReportsTitle: "暂无周报或月报",
+    noReportsNote: "到时间会自动生成，也可以手动生成当前周期。",
     itemCount: count => `${count} 项`,
     focus: "专注",
     break: "休息",
@@ -184,6 +192,14 @@ const i18n = {
     resetChecks: "Reset Checks",
     allTracks: "All Tracks",
     completedArchive: "Archive",
+    reports: "Reports",
+    weeklyReport: "Weekly",
+    monthlyReport: "Monthly",
+    generateWeekly: "Generate Weekly",
+    generateMonthly: "Generate Monthly",
+    autoSummaryRule: "Auto at Fri 18:00 / month-end 20:00",
+    noReportsTitle: "No weekly or monthly reports",
+    noReportsNote: "They are generated on schedule, or manually for the current period.",
     itemCount: count => `${count} items`,
     focus: "Focus",
     break: "Break",
@@ -417,6 +433,7 @@ function bindNotifications() {
 
 
 let inboxMessages = [];
+let reports = [];
 let inboxFetchInFlight = false;
 let inboxFetchQueued = false;
 let inboxRefreshTimer = null;
@@ -640,6 +657,64 @@ async function fetchWeWorkStatus() {
     weworkStatus = { configured: false, bridge_enabled: false };
   }
   renderWeWorkStatus();
+}
+
+async function fetchReports() {
+  try {
+    const response = await fetch('/api/reports', { cache: 'no-store' });
+    if (!response.ok) throw new Error('reports unavailable');
+    const data = await response.json();
+    reports = data.reports || [];
+  } catch (error) {
+    reports = [];
+  }
+  renderReports();
+}
+
+async function generateReport(type) {
+  const response = await fetch('/api/reports/generate', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ type }),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    reports = data.reports || [];
+    renderReports();
+  }
+}
+
+function renderReport(report) {
+  const typeLabel = report.report_type === 'monthly' ? t("monthlyReport") : t("weeklyReport");
+  const summary = String(report.summary || "");
+  const lines = summary.split(/\r?\n/).filter(line => line.trim().startsWith("- ")).slice(0, 5);
+  return `
+    <article class="report-card">
+      <div class="report-head">
+        <span>${escapeHtml(typeLabel)}</span>
+        <strong>${escapeHtml(report.title)}</strong>
+      </div>
+      <p>${escapeHtml(report.range_label)}</p>
+      <div class="report-summary">
+        ${lines.length ? lines.map(line => `<span>${escapeHtml(line.replace(/^- /, ""))}</span>`).join("") : `<span>${escapeHtml(t("autoSummaryRule"))}</span>`}
+      </div>
+    </article>
+  `;
+}
+
+function renderReports() {
+  const list = document.querySelector("#reportList");
+  const count = document.querySelector("#reportCount");
+  if (count) count.textContent = t("itemCount", reports.length);
+  if (!list) return;
+  list.innerHTML = reports.length
+    ? reports.map(renderReport).join("")
+    : `<article class="report-card empty"><div class="report-head"><span>${escapeHtml(t("reports"))}</span><strong>${escapeHtml(t("noReportsTitle"))}</strong></div><p>${escapeHtml(t("noReportsNote"))}</p></article>`;
+}
+
+function bindReports() {
+  document.querySelector("#generateWeeklyReport")?.addEventListener("click", () => generateReport("weekly"));
+  document.querySelector("#generateMonthlyReport")?.addEventListener("click", () => generateReport("monthly"));
 }
 
 function renderWeWorkStatus() {
@@ -961,6 +1036,7 @@ function renderArchive() {
     ? archived.map(taskCardHtml).join("")
     : `<article class="task-card empty"><div><p class="task-title">${escapeHtml(t("emptyArchiveTitle"))}</p><div class="task-meta"><span>${escapeHtml(t("emptyArchiveNote"))}</span></div></div></article>`;
   bindTaskCards(archiveList);
+  renderReports();
 }
 
 function renderOverview() {
@@ -1070,6 +1146,7 @@ function bindLanguage() {
     render();
     renderInbox();
     renderWeWorkStatus();
+    renderReports();
   });
 }
 
@@ -1151,8 +1228,10 @@ bindInboxStream();
 bindWeWork();
 bindLanguage();
 bindRailControls();
+bindReports();
 fetchInbox();
 fetchWeWorkStatus();
+fetchReports();
 tickClock();
 checkReminders();
 renderPomodoro();
@@ -1160,3 +1239,4 @@ setInterval(tickClock, 15000);
 setInterval(checkReminders, 30000);
 setInterval(renderDeadline, 60000);
 setInterval(fetchInbox, 5000);
+setInterval(fetchReports, 15 * 60 * 1000);

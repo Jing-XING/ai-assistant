@@ -8,6 +8,7 @@ const { DatabaseSync } = require('node:sqlite');
 const PORT = Number(process.env.PORT || 8787);
 const ROOT = __dirname;
 const DB_PATH = path.join(ROOT, 'task_dashboard.db');
+const PROGRESS_ROOT = path.resolve(ROOT, '..', 'progress');
 const db = new DatabaseSync(DB_PATH);
 const ENV_PATH = path.join(ROOT, '.env');
 
@@ -93,6 +94,16 @@ function initDb() {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS reports (
+      id TEXT PRIMARY KEY,
+      report_type TEXT NOT NULL,
+      period_key TEXT NOT NULL,
+      title TEXT NOT NULL,
+      range_label TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(report_type, period_key)
+    );
   `);
   const taskColumns = db.prepare('PRAGMA table_info(tasks)').all().map(column => column.name);
   if (!taskColumns.includes('archived_at')) {
@@ -161,6 +172,91 @@ function pad(value) {
   return String(value).padStart(2, '0');
 }
 
+function beijingParts(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    weekday: 'short',
+    hour12: false,
+  }).formatToParts(date);
+  const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+    second: Number(map.second),
+    weekday: map.weekday,
+  };
+}
+
+function beijingDateString(date = new Date()) {
+  const parts = beijingParts(date);
+  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
+}
+
+function dateFromBeijing(year, month, day, hour = 0, minute = 0, second = 0) {
+  return new Date(Date.UTC(year, month - 1, day, hour - 8, minute, second));
+}
+
+function formatBeijingDate(date) {
+  return beijingDateString(date);
+}
+
+function lastDayOfMonth(year, month) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function weekPeriod(date = new Date()) {
+  const parts = beijingParts(date);
+  const weekdayIndex = {
+    周一: 1,
+    周二: 2,
+    周三: 3,
+    周四: 4,
+    周五: 5,
+    周六: 6,
+    周日: 7,
+  }[parts.weekday] || 1;
+  const mondayOffset = 1 - weekdayIndex;
+  const start = dateFromBeijing(parts.year, parts.month, parts.day + mondayOffset);
+  const end = dateFromBeijing(parts.year, parts.month, parts.day + mondayOffset + 6, 23, 59, 59);
+  const periodKey = `${formatBeijingDate(start)}_${formatBeijingDate(end)}`;
+  return {
+    type: 'weekly',
+    periodKey,
+    title: `周报 ${formatBeijingDate(start)} - ${formatBeijingDate(end)}`,
+    rangeLabel: `${formatBeijingDate(start)} 至 ${formatBeijingDate(end)}`,
+    start,
+    end,
+    fileName: `${formatBeijingDate(start)}_${formatBeijingDate(end)}.md`,
+    displayKey: periodKey,
+  };
+}
+
+function monthPeriod(date = new Date()) {
+  const parts = beijingParts(date);
+  const start = dateFromBeijing(parts.year, parts.month, 1);
+  const end = dateFromBeijing(parts.year, parts.month, lastDayOfMonth(parts.year, parts.month), 23, 59, 59);
+  const periodKey = `${parts.year}-${pad(parts.month)}`;
+  return {
+    type: 'monthly',
+    periodKey,
+    title: `月报 ${periodKey}`,
+    rangeLabel: `${formatBeijingDate(start)} 至 ${formatBeijingDate(end)}`,
+    start,
+    end,
+    fileName: `${periodKey}.md`,
+    displayKey: periodKey,
+  };
+}
+
 function localIso(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00+08:00`;
 }
@@ -200,6 +296,113 @@ function ensureReminderForTask(row) {
 function ensureAllReminders() {
   const all = db.prepare('SELECT * FROM tasks WHERE done = 0').all();
   for (const row of all) ensureReminderForTask(row);
+}
+
+function parseDbTime(value) {
+  if (!value) return null;
+  const normalized = String(value).replace(' ', 'T');
+  const withZone = /[zZ]|[+-]\d{2}:?\d{2}$/.test(normalized) ? normalized : `${normalized}+08:00`;
+  const date = new Date(withZone);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function inPeriod(value, period) {
+  const date = parseDbTime(value);
+  return date && date >= period.start && date <= period.end;
+}
+
+function trackName(track) {
+  return {
+    paper: '论文',
+    market: '股票',
+    career: '求职',
+    ops: '事务',
+    body: '运动/生活',
+    meeting: '会议',
+  }[track] || track || '其他';
+}
+
+function summarizeReport(period) {
+  const allTasks = rows();
+  const completed = allTasks.filter(task => task.archived_at && inPeriod(task.archived_at, period));
+  const open = allTasks.filter(task => !task.archived_at && !task.done);
+  const byTrack = new Map();
+  for (const task of completed) byTrack.set(task.track, (byTrack.get(task.track) || 0) + 1);
+  const topOpen = open
+    .sort((a, b) => (a.p || 'P2').localeCompare(b.p || 'P2') || (a.sort_order || 999) - (b.sort_order || 999))
+    .slice(0, 6);
+
+  const lines = [
+    `# ${period.title}`,
+    '',
+    `时间范围：${period.rangeLabel}（北京时间）`,
+    `生成时间：${localIso(new Date())}`,
+    '',
+    '## 完成概览',
+    `- 完成任务：${completed.length} 项`,
+    `- 未完成任务：${open.length} 项`,
+  ];
+
+  if (byTrack.size) {
+    lines.push(`- 完成分布：${[...byTrack.entries()].map(([track, count]) => `${trackName(track)} ${count}`).join('；')}`);
+  }
+
+  lines.push('', '## 本期完成');
+  if (completed.length) {
+    for (const task of completed.slice(0, 12)) {
+      lines.push(`- ${task.p}｜${trackName(task.track)}｜${task.title}`);
+    }
+    if (completed.length > 12) lines.push(`- 另有 ${completed.length - 12} 项已完成任务未展开。`);
+  } else {
+    lines.push('- 本期暂无已归档完成任务。');
+  }
+
+  lines.push('', '## 下期关注');
+  if (topOpen.length) {
+    for (const task of topOpen) {
+      lines.push(`- ${task.p}｜${trackName(task.track)}｜${task.title}`);
+    }
+  } else {
+    lines.push('- 暂无未完成任务。');
+  }
+
+  return lines.join('\n');
+}
+
+function writeReportFile(period, summary) {
+  const folder = path.join(PROGRESS_ROOT, 'tracks', period.type === 'weekly' ? 'weekly' : 'monthly');
+  fs.mkdirSync(folder, { recursive: true });
+  fs.writeFileSync(path.join(folder, period.fileName), summary, 'utf8');
+}
+
+function ensureReport(period) {
+  const existing = db.prepare('SELECT id FROM reports WHERE report_type = ? AND period_key = ?').get(period.type, period.periodKey);
+  if (existing) return false;
+  const summary = summarizeReport(period);
+  const id = `${period.type}-${period.periodKey}`;
+  db.prepare(`
+    INSERT INTO reports (id, report_type, period_key, title, range_label, summary)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(id, period.type, period.periodKey, period.title, period.rangeLabel, summary);
+  writeReportFile(period, summary);
+  notifySse({ type: 'reports_updated', report_id: id });
+  return true;
+}
+
+function reportRows() {
+  return db.prepare(`
+    SELECT id, report_type, period_key, title, range_label, summary, created_at
+    FROM reports
+    ORDER BY created_at DESC
+    LIMIT 60
+  `).all();
+}
+
+function scanReportJobs() {
+  const now = new Date();
+  const parts = beijingParts(now);
+  if (parts.weekday === '周五' && parts.hour >= 18) ensureReport(weekPeriod(now));
+  if (parts.day === lastDayOfMonth(parts.year, parts.month) && parts.hour >= 20) ensureReport(monthPeriod(now));
 }
 
 async function sendWeWork(content) {
@@ -564,6 +767,19 @@ async function handleApi(req, res, url) {
     return json(res, 200, { tasks: rows() });
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/reports') {
+    scanReportJobs();
+    return json(res, 200, { reports: reportRows() });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/reports/generate') {
+    const body = await readBody(req);
+    const type = body.type === 'monthly' ? 'monthly' : 'weekly';
+    const period = type === 'monthly' ? monthPeriod(new Date()) : weekPeriod(new Date());
+    ensureReport(period);
+    return json(res, 200, { reports: reportRows() });
+  }
+
   const taskMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)$/);
   if (req.method === 'PATCH' && taskMatch) {
     const id = decodeURIComponent(taskMatch[1]);
@@ -648,7 +864,9 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`SQLite database: ${DB_PATH}`);
   ensureAllReminders();
   scanReminders();
+  scanReportJobs();
   scanInboxJobs();
   setInterval(scanReminders, 60_000);
+  setInterval(scanReportJobs, 15 * 60_000);
   setInterval(scanInboxJobs, 5_000);
 });

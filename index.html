@@ -123,6 +123,17 @@
         <section class="page-view" data-page="archive">
           <section class="panel-block light-panel">
             <div class="section-head">
+              <h2 data-i18n="reports">报告</h2>
+              <span id="reportCount">0 项</span>
+            </div>
+            <div class="report-actions">
+              <button class="ghost-button" id="generateWeeklyReport" type="button" data-i18n="generateWeekly">生成周报</button>
+              <button class="ghost-button" id="generateMonthlyReport" type="button" data-i18n="generateMonthly">生成月报</button>
+            </div>
+            <div class="report-list" id="reportList"></div>
+          </section>
+          <section class="panel-block light-panel archive-tasks-panel">
+            <div class="section-head">
               <h2 data-i18n="completedArchive">归档</h2>
               <span id="archiveCount">0 项</span>
             </div>

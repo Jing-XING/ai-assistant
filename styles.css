@@ -619,6 +619,67 @@ body:not([data-page="overview"]) .kicker {
   color: var(--muted);
 }
 
+.archive-tasks-panel {
+  margin-top: 18px;
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.report-list {
+  display: grid;
+  gap: 10px;
+}
+
+.report-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel) 76%, transparent);
+  padding: 14px;
+  box-shadow: var(--soft-shadow);
+}
+
+.report-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.report-head span {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.report-head strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.report-card p {
+  margin: 8px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.report-summary {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+}
+
+.report-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .principle-block {
   margin-top: 18px;
 }
