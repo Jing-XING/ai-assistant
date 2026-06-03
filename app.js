@@ -59,6 +59,9 @@ const i18n = {
     weworkHintOff: "未检测到企业微信 webhook 配置，先在 .env 中配置 WEWORK_WEBHOOK_URL。",
     colors: "配色",
     theme: "主题",
+    collapseRail: "收起侧边栏",
+    expandRail: "展开侧边栏",
+    resizeRail: "调节侧边栏宽度",
     messageCodex: "给 Codex 留言",
     collapse: "收起",
     inboxPlaceholder: "把任务、想法、提醒直接写在这里...",
@@ -210,6 +213,9 @@ const i18n = {
     weworkHintOff: "No WeWork webhook detected. Configure WEWORK_WEBHOOK_URL in .env first.",
     colors: "Colors",
     theme: "Theme",
+    collapseRail: "Collapse Sidebar",
+    expandRail: "Expand Sidebar",
+    resizeRail: "Resize Sidebar",
     messageCodex: "Message Codex",
     collapse: "Collapse",
     inboxPlaceholder: "Write tasks, ideas, reminders here...",
@@ -324,6 +330,20 @@ const themeKey = "task-deck-theme-v2";
 let currentTheme = localStorage.getItem(themeKey) || "air";
 document.body.dataset.theme = currentTheme;
 const chatDockKey = "task-deck-chat-dock-open-v1";
+const railWidthKey = "task-deck-rail-width-v1";
+const railCollapsedKey = "task-deck-rail-collapsed-v1";
+const railMinWidth = 216;
+const railMaxWidth = 360;
+const railCollapsedWidth = 72;
+
+function clampRailWidth(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 272;
+  return Math.min(railMaxWidth, Math.max(railMinWidth, numeric));
+}
+
+let railWidth = clampRailWidth(localStorage.getItem(railWidthKey) || 272);
+let railCollapsed = localStorage.getItem(railCollapsedKey) === "1";
 
 
 const reminders = [
@@ -712,12 +732,12 @@ let selectedTaskId = null;
 let activePage = location.hash.replace("#", "") || "overview";
 
 const pages = [
-  { id: "overview", labelKey: "pageOverview", short: "HOME", titleKey: "titleOverview", kickerKey: "kickerOverview" },
-  { id: "tasks", labelKey: "pageTasks", short: "TASK", titleKey: "titleTasks", kickerKey: "kickerTasks" },
-  { id: "archive", labelKey: "pageArchive", short: "ARC", titleKey: "titleArchive", kickerKey: "kickerArchive" },
-  { id: "focus", labelKey: "pageFocus", short: "FOCUS", titleKey: "titleFocus", kickerKey: "kickerFocus" },
-  { id: "bridge", labelKey: "pageBridge", short: "CODEX", titleKey: "titleBridge", kickerKey: "kickerBridge" },
-  { id: "settings", labelKey: "pageSettings", short: "SETUP", titleKey: "titleSettings", kickerKey: "kickerSettings" },
+  { id: "overview", labelKey: "pageOverview", short: "HOME", railIcon: "H", titleKey: "titleOverview", kickerKey: "kickerOverview" },
+  { id: "tasks", labelKey: "pageTasks", short: "TASK", railIcon: "T", titleKey: "titleTasks", kickerKey: "kickerTasks" },
+  { id: "archive", labelKey: "pageArchive", short: "ARC", railIcon: "A", titleKey: "titleArchive", kickerKey: "kickerArchive" },
+  { id: "focus", labelKey: "pageFocus", short: "FOCUS", railIcon: "F", titleKey: "titleFocus", kickerKey: "kickerFocus" },
+  { id: "bridge", labelKey: "pageBridge", short: "CODEX", railIcon: "C", titleKey: "titleBridge", kickerKey: "kickerBridge" },
+  { id: "settings", labelKey: "pageSettings", short: "SETUP", railIcon: "S", titleKey: "titleSettings", kickerKey: "kickerSettings" },
 ];
 
 const pageNav = document.querySelector("#pageNav");
@@ -744,6 +764,72 @@ function applyStaticText() {
     button.textContent = t("languageToggle");
     button.setAttribute("aria-label", currentLang === "zh" ? "Switch to English" : "切换到中文");
   }
+}
+
+function applyRailLayout() {
+  const shell = document.querySelector(".shell");
+  const rail = document.querySelector(".rail");
+  const toggle = document.querySelector("#railToggle");
+  const resizer = document.querySelector("#railResizer");
+  if (!shell || !rail) return;
+
+  const desktop = window.matchMedia("(min-width: 961px)").matches;
+  const collapsed = desktop && railCollapsed;
+  const width = collapsed ? railCollapsedWidth : railWidth;
+  shell.style.setProperty("--rail-width", `${width}px`);
+  rail.classList.toggle("collapsed", collapsed);
+
+  if (toggle) {
+    const label = collapsed ? t("expandRail") : t("collapseRail");
+    toggle.textContent = collapsed ? "›" : "‹";
+    toggle.setAttribute("aria-label", label);
+    toggle.title = label;
+  }
+  if (resizer) {
+    resizer.setAttribute("aria-label", t("resizeRail"));
+    resizer.title = t("resizeRail");
+  }
+}
+
+function bindRailControls() {
+  const toggle = document.querySelector("#railToggle");
+  const resizer = document.querySelector("#railResizer");
+
+  toggle?.addEventListener("click", () => {
+    if (!window.matchMedia("(min-width: 961px)").matches) return;
+    railCollapsed = !railCollapsed;
+    localStorage.setItem(railCollapsedKey, railCollapsed ? "1" : "0");
+    applyRailLayout();
+  });
+
+  resizer?.addEventListener("pointerdown", event => {
+    if (!window.matchMedia("(min-width: 961px)").matches) return;
+    event.preventDefault();
+    railCollapsed = false;
+    localStorage.setItem(railCollapsedKey, "0");
+    document.body.classList.add("resizing-rail");
+    resizer.setPointerCapture?.(event.pointerId);
+
+    const move = moveEvent => {
+      railWidth = clampRailWidth(moveEvent.clientX);
+      localStorage.setItem(railWidthKey, String(railWidth));
+      applyRailLayout();
+    };
+
+    const stop = () => {
+      document.body.classList.remove("resizing-rail");
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+
+    move(event);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+  });
+
+  window.addEventListener("resize", applyRailLayout);
 }
 
 
@@ -774,7 +860,7 @@ function renderPageNav() {
       : page.id === "archive"
         ? tasks.filter(task => task.archived_at).length
         : currentLang === "en" ? page.short : "";
-    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${t(page.labelKey)}</span>${count !== "" ? `<strong>${count}</strong>` : ""}</button>`;
+    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" data-rail-icon="${page.railIcon}" type="button"><span>${t(page.labelKey)}</span>${count !== "" ? `<strong>${count}</strong>` : ""}</button>`;
   }).join("");
 
   document.querySelectorAll("[data-page-link]").forEach(button => {
@@ -974,6 +1060,7 @@ function bindLanguage() {
 
 function render() {
   applyStaticText();
+  applyRailLayout();
   renderThemes();
   renderPageNav();
   renderTrackFilters();
@@ -1048,6 +1135,7 @@ bindInbox();
 bindInboxStream();
 bindWeWork();
 bindLanguage();
+bindRailControls();
 fetchInbox();
 fetchWeWorkStatus();
 tickClock();
