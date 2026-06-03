@@ -968,7 +968,10 @@ function renderPageNav() {
 
 function renderTrackFilters() {
   if (!filterTabs) return;
-  filterTabs.innerHTML = tracks.map(t => `<button class="${active === t.id ? "active" : ""}" data-track="${t.id}">${t.short}</button>`).join("");
+  filterTabs.innerHTML = tracks.map(track => {
+    const label = t(track.labelKey);
+    return `<button class="${active === track.id ? "active" : ""}" data-track="${track.id}" title="${escapeHtml(label)}">${escapeHtml(label)}</button>`;
+  }).join("");
 
   document.querySelectorAll("[data-track]").forEach(btn => {
     btn.addEventListener("click", () => {
