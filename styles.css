@@ -235,6 +235,17 @@ button:active { transform: scale(.985); }
   align-items: center;
 }
 
+.track-button span {
+  min-width: 0;
+}
+
+.track-button strong {
+  flex: 0 0 auto;
+  color: var(--rail-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .track-button.active,
 .track-button:hover {
   background: var(--rail-active);

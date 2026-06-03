@@ -119,6 +119,16 @@ const i18n = {
     titleFocus: "番茄钟与时间块",
     titleBridge: "Codex 操作桥",
     titleSettings: "提醒与机器人",
+    kickerOverview: "个人任务看板",
+    kickerTasks: "任务追踪",
+    kickerArchive: "完成记录",
+    kickerFocus: "单时段单任务",
+    kickerBridge: "消息与处理过程",
+    kickerSettings: "本地设置",
+    jumpTasksMeta: "任务",
+    jumpArchiveMeta: "归档",
+    jumpFocusMeta: "专注",
+    jumpSettingsMeta: "设置",
     themeAir: "系统浅色",
     themePaper: "纸墨",
     themeTerminal: "终端绿",
@@ -260,6 +270,16 @@ const i18n = {
     titleFocus: "Pomodoro and Time Blocks",
     titleBridge: "Codex Bridge",
     titleSettings: "Reminders and Bot",
+    kickerOverview: "Personal Operating Board",
+    kickerTasks: "Tracked Work",
+    kickerArchive: "Completed Work",
+    kickerFocus: "One Slot One Task",
+    kickerBridge: "Message and Process",
+    kickerSettings: "Local Control",
+    jumpTasksMeta: "Tasks",
+    jumpArchiveMeta: "Archive",
+    jumpFocusMeta: "Focus",
+    jumpSettingsMeta: "Setup",
     themeAir: "System Light",
     themePaper: "Paper",
     themeTerminal: "Terminal Green",
@@ -692,12 +712,12 @@ let selectedTaskId = null;
 let activePage = location.hash.replace("#", "") || "overview";
 
 const pages = [
-  { id: "overview", labelKey: "pageOverview", short: "HOME", titleKey: "titleOverview", kicker: "PERSONAL OPERATING BOARD" },
-  { id: "tasks", labelKey: "pageTasks", short: "TASK", titleKey: "titleTasks", kicker: "TRACKED WORK" },
-  { id: "archive", labelKey: "pageArchive", short: "ARC", titleKey: "titleArchive", kicker: "COMPLETED WORK" },
-  { id: "focus", labelKey: "pageFocus", short: "FOCUS", titleKey: "titleFocus", kicker: "ONE SLOT ONE TASK" },
-  { id: "bridge", labelKey: "pageBridge", short: "CODEX", titleKey: "titleBridge", kicker: "MESSAGE AND PROCESS" },
-  { id: "settings", labelKey: "pageSettings", short: "SETUP", titleKey: "titleSettings", kicker: "LOCAL CONTROL" },
+  { id: "overview", labelKey: "pageOverview", short: "HOME", titleKey: "titleOverview", kickerKey: "kickerOverview" },
+  { id: "tasks", labelKey: "pageTasks", short: "TASK", titleKey: "titleTasks", kickerKey: "kickerTasks" },
+  { id: "archive", labelKey: "pageArchive", short: "ARC", titleKey: "titleArchive", kickerKey: "kickerArchive" },
+  { id: "focus", labelKey: "pageFocus", short: "FOCUS", titleKey: "titleFocus", kickerKey: "kickerFocus" },
+  { id: "bridge", labelKey: "pageBridge", short: "CODEX", titleKey: "titleBridge", kickerKey: "kickerBridge" },
+  { id: "settings", labelKey: "pageSettings", short: "SETUP", titleKey: "titleSettings", kickerKey: "kickerSettings" },
 ];
 
 const pageNav = document.querySelector("#pageNav");
@@ -746,15 +766,15 @@ function renderPageNav() {
   if (!pages.some(page => page.id === activePage)) activePage = "overview";
   const current = pages.find(page => page.id === activePage);
   document.querySelector("#pageTitle").textContent = t(current.titleKey);
-  document.querySelector("#pageKicker").textContent = current.kicker;
+  document.querySelector("#pageKicker").textContent = t(current.kickerKey);
 
   pageNav.innerHTML = pages.map(page => {
     const count = page.id === "tasks"
       ? tasks.filter(task => !task.archived_at && !task.done).length
       : page.id === "archive"
         ? tasks.filter(task => task.archived_at).length
-        : page.short;
-    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${t(page.labelKey)}</span><strong>${count}</strong></button>`;
+        : currentLang === "en" ? page.short : "";
+    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${t(page.labelKey)}</span>${count !== "" ? `<strong>${count}</strong>` : ""}</button>`;
   }).join("");
 
   document.querySelectorAll("[data-page-link]").forEach(button => {
