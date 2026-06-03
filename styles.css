@@ -639,6 +639,25 @@ h1 {
   gap: 8px;
 }
 
+.language-toggle {
+  min-width: 48px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 84%, #fff);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(36, 39, 46, 0.04);
+}
+
+.language-toggle:hover {
+  background: color-mix(in srgb, var(--ink) 88%, #fff);
+  color: #fff;
+  border-color: transparent;
+}
+
 
 .pomodoro-panel {
   border-color: color-mix(in srgb, var(--green) 18%, var(--line));

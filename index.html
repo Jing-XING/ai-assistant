@@ -31,56 +31,57 @@
           </div>
           <div class="top-actions">
             <div class="today-card">
-              <span>北京时间</span>
+              <span data-i18n="beijingTime">北京时间</span>
               <strong id="clock">--:--</strong>
             </div>
+            <button class="language-toggle" id="languageToggle" type="button" aria-label="切换语言">EN</button>
             <div class="theme-picker" id="themePicker" aria-label="配色主题"></div>
           </div>
         </header>
 
         <section class="status-grid" aria-label="状态总览">
           <article class="status-tile urgent">
-            <span>最近 DDL</span>
+            <span data-i18n="nearestDdl">最近 DDL</span>
             <strong id="nextDeadline">CIKM Short</strong>
-            <small id="deadlineRemain">计算中</small>
+            <small id="deadlineRemain" data-i18n="calculating">计算中</small>
           </article>
           <article class="status-tile">
-            <span>今日打开</span>
+            <span data-i18n="todayOpen">今日打开</span>
             <strong id="openCount">0</strong>
-            <small>未完成事项</small>
+            <small data-i18n="unfinishedItems">未完成事项</small>
           </article>
           <article class="status-tile market">
-            <span>股票主线</span>
-            <strong>科技轮动</strong>
-            <small>条件触发，不全天盯盘</small>
+            <span data-i18n="stockTheme">股票主线</span>
+            <strong data-i18n="techRotation">科技轮动</strong>
+            <small data-i18n="triggerOnly">条件触发，不全天盯盘</small>
           </article>
           <article class="status-tile recovery">
-            <span>运动频率</span>
+            <span data-i18n="trainingRate">运动频率</span>
             <strong>1 + 1</strong>
-            <small>羽毛球一次，健身一次</small>
+            <small data-i18n="trainingRateNote">羽毛球一次，健身一次</small>
           </article>
         </section>
 
         <section class="quick-jump" aria-label="快捷入口">
           <button class="jump-tile" data-page-link="tasks" type="button">
             <span>Tasks</span>
-            <strong>任务流</strong>
+            <strong data-i18n="tasks">任务流</strong>
           </button>
           <button class="jump-tile" data-page-link="archive" type="button">
             <span>Archive</span>
-            <strong>归档</strong>
+            <strong data-i18n="archive">归档</strong>
           </button>
           <button class="jump-tile" data-page-link="focus" type="button">
             <span>Focus</span>
-            <strong>番茄钟</strong>
+            <strong data-i18n="pomodoro">番茄钟</strong>
           </button>
           <button class="jump-tile" data-page-link="bridge" type="button">
             <span>Codex</span>
-            <strong>操作桥</strong>
+            <strong data-i18n="bridge">操作桥</strong>
           </button>
           <button class="jump-tile" data-page-link="settings" type="button">
             <span>Setup</span>
-            <strong>提醒/机器人</strong>
+            <strong data-i18n="remindersBot">提醒/机器人</strong>
           </button>
         </section>
 
@@ -88,15 +89,15 @@
           <div class="overview-grid">
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2>今日主线</h2>
-                <span>优先级</span>
+                <h2 data-i18n="todayMainline">今日主线</h2>
+                <span data-i18n="priority">优先级</span>
               </div>
               <div class="task-list compact-list" id="overviewTasks"></div>
             </section>
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2>时间块</h2>
-                <span>单时段单任务</span>
+                <h2 data-i18n="timeBlocks">时间块</h2>
+                <span data-i18n="oneSlotOneTask">单时段单任务</span>
               </div>
               <div class="timeline light-timeline" id="overviewTimeline"></div>
             </section>
@@ -107,12 +108,12 @@
           <section class="control-strip" aria-label="任务筛选">
             <div class="segmented" id="filterTabs"></div>
             <div class="control-actions">
-              <button class="ghost-button" id="resetDone" type="button">重置勾选</button>
+              <button class="ghost-button" id="resetDone" type="button" data-i18n="resetChecks">重置勾选</button>
             </div>
           </section>
           <div class="task-column">
             <div class="section-head">
-              <h2>任务流</h2>
+              <h2 data-i18n="tasks">任务流</h2>
               <span id="activeTrackLabel">全部轨道</span>
             </div>
             <div class="task-list" id="taskList"></div>
@@ -122,7 +123,7 @@
         <section class="page-view" data-page="archive">
           <section class="panel-block light-panel">
             <div class="section-head">
-              <h2>已完成归档</h2>
+              <h2 data-i18n="completedArchive">已完成归档</h2>
               <span id="archiveCount">0 项</span>
             </div>
             <div class="task-list" id="archiveList"></div>
@@ -133,8 +134,8 @@
           <div class="split-layout">
             <section class="panel-block pomodoro-panel">
               <div class="section-head compact">
-                <h2>番茄钟</h2>
-                <span>单时段单任务</span>
+                <h2 data-i18n="pomodoro">番茄钟</h2>
+                <span data-i18n="oneSlotOneTask">单时段单任务</span>
               </div>
               <div class="pomodoro-face">
                 <strong id="pomoTime">25:00</strong>
@@ -142,30 +143,30 @@
               </div>
               <p class="pomo-task" id="pomoTask">当前：选择一个任务开始</p>
               <div class="pomo-actions">
-                <button class="theme-button" id="pomoStart" type="button">开始</button>
-                <button class="theme-button" id="pomoPause" type="button">暂停</button>
-                <button class="theme-button" id="pomoReset" type="button">重置</button>
+                <button class="theme-button" id="pomoStart" type="button" data-i18n="start">开始</button>
+                <button class="theme-button" id="pomoPause" type="button" data-i18n="pause">暂停</button>
+                <button class="theme-button" id="pomoReset" type="button" data-i18n="reset">重置</button>
               </div>
             </section>
 
             <section class="panel-block focus-panel">
               <div class="section-head compact">
-                <h2>时间块</h2>
-                <span>建议</span>
+                <h2 data-i18n="timeBlocks">时间块</h2>
+                <span data-i18n="suggestion">建议</span>
               </div>
               <div class="timeline" id="timeline"></div>
             </section>
           </div>
           <section class="panel-block focus-panel principle-block">
             <div class="section-head compact">
-              <h2>本周原则</h2>
-              <span>执行口径</span>
+              <h2 data-i18n="weeklyPrinciples">本周原则</h2>
+              <span data-i18n="executionRule">执行口径</span>
             </div>
             <ul class="principles">
-              <li>论文占最好的连续时间。</li>
-              <li>股票只在固定窗口与触发条件下处理。</li>
-              <li>求职每周固定推进，不挤占论文主块。</li>
-              <li>运动是恢复，不加码成负担。</li>
+              <li data-i18n="principlePaper">论文占最好的连续时间。</li>
+              <li data-i18n="principleMarket">股票只在固定窗口与触发条件下处理。</li>
+              <li data-i18n="principleCareer">求职每周固定推进，不挤占论文主块。</li>
+              <li data-i18n="principleBody">运动是恢复，不加码成负担。</li>
             </ul>
           </section>
         </section>
@@ -173,12 +174,12 @@
         <section class="page-view" data-page="bridge">
           <section class="panel-block light-panel bridge-home">
             <div class="section-head">
-              <h2>Codex 操作桥</h2>
-              <span>右侧浮窗</span>
+              <h2 data-i18n="codexBridge">Codex 操作桥</h2>
+              <span data-i18n="rightDock">右侧浮窗</span>
             </div>
             <div class="bridge-actions">
-              <button class="ghost-button" id="openChatDock" type="button">打开聊天窗</button>
-              <span class="setting-note">网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。</span>
+              <button class="ghost-button" id="openChatDock" type="button" data-i18n="openChat">打开聊天窗</button>
+              <span class="setting-note" data-i18n="bridgeHint">网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。</span>
             </div>
           </section>
         </section>
@@ -187,30 +188,30 @@
           <div class="settings-grid">
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2>提醒</h2>
-                <span>网页端</span>
+                <h2 data-i18n="reminders">提醒</h2>
+                <span data-i18n="webSide">网页端</span>
               </div>
-              <button class="ghost-button" id="enableNotify" type="button">开启提醒</button>
-              <p class="setting-note">所有带具体时间的任务默认提前 10 分钟提醒；网页保持打开时，浏览器提醒和声音可用。</p>
+              <button class="ghost-button" id="enableNotify" type="button" data-i18n="enableNotify">开启提醒</button>
+              <p class="setting-note" data-i18n="notifyHint">所有带具体时间的任务默认提前 10 分钟提醒；网页保持打开时，浏览器提醒和声音可用。</p>
             </section>
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2>企业微信机器人</h2>
+                <h2 data-i18n="weworkBot">企业微信机器人</h2>
                 <span id="weworkStatusText">检测中</span>
               </div>
               <div class="wework-control">
                 <label class="switch-row">
                   <input id="weworkBridgeToggle" type="checkbox" />
-                  <span>同步 Codex 关键结果</span>
+                  <span data-i18n="syncCodexResults">同步 Codex 关键结果</span>
                 </label>
-                <button class="ghost-button" id="testWeWork" type="button">发送测试</button>
+                <button class="ghost-button" id="testWeWork" type="button" data-i18n="sendTest">发送测试</button>
               </div>
               <p class="setting-note" id="weworkHint">推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。</p>
             </section>
             <section class="panel-block light-panel">
               <div class="section-head">
-                <h2>配色</h2>
-                <span>主题</span>
+                <h2 data-i18n="colors">配色</h2>
+                <span data-i18n="theme">主题</span>
               </div>
               <div class="theme-picker settings-theme-picker" id="themePickerPanel" aria-label="配色主题"></div>
             </section>
@@ -225,15 +226,15 @@
       </button>
       <div class="chat-dock-body">
         <div class="section-head compact chat-head">
-          <h2>给 Codex 留言</h2>
-          <button class="inbox-done" id="closeChatDock" type="button">收起</button>
+          <h2 data-i18n="messageCodex">给 Codex 留言</h2>
+          <button class="inbox-done" id="closeChatDock" type="button" data-i18n="collapse">收起</button>
         </div>
         <div class="inbox-list" id="inboxList"></div>
         <div class="chat-composer">
-          <textarea id="inboxInput" class="inbox-input" rows="3" placeholder="把任务、想法、提醒直接写在这里..."></textarea>
+          <textarea id="inboxInput" class="inbox-input" rows="3" placeholder="把任务、想法、提醒直接写在这里..." data-i18n-placeholder="inboxPlaceholder"></textarea>
           <div class="inbox-actions">
-            <button class="theme-button" id="sendInbox" type="button">发送</button>
-            <button class="theme-button" id="refreshInbox" type="button">刷新</button>
+            <button class="theme-button" id="sendInbox" type="button" data-i18n="send">发送</button>
+            <button class="theme-button" id="refreshInbox" type="button" data-i18n="refresh">刷新</button>
           </div>
         </div>
       </div>

@@ -1,10 +1,304 @@
+const i18n = {
+  zh: {
+    appTitle: "个人任务指挥台",
+    languageToggle: "EN",
+    beijingTime: "北京时间",
+    nearestDdl: "最近 DDL",
+    calculating: "计算中",
+    expired: "已到期",
+    remaining: (days, hours) => `剩 ${days} 天 ${hours} 小时`,
+    todayOpen: "今日打开",
+    unfinishedItems: "未完成事项",
+    stockTheme: "股票主线",
+    techRotation: "科技轮动",
+    triggerOnly: "条件触发，不全天盯盘",
+    trainingRate: "运动频率",
+    trainingRateNote: "羽毛球一次，健身一次",
+    tasks: "任务流",
+    archive: "归档",
+    pomodoro: "番茄钟",
+    bridge: "操作桥",
+    remindersBot: "提醒/机器人",
+    todayMainline: "今日主线",
+    priority: "优先级",
+    timeBlocks: "时间块",
+    oneSlotOneTask: "单时段单任务",
+    resetChecks: "重置勾选",
+    allTracks: "全部轨道",
+    completedArchive: "已完成归档",
+    itemCount: count => `${count} 项`,
+    focus: "专注",
+    break: "休息",
+    currentTask: title => `当前：${title}`,
+    noCurrentTask: "当前：选择一个任务开始",
+    start: "开始",
+    pause: "暂停",
+    reset: "重置",
+    suggestion: "建议",
+    weeklyPrinciples: "本周原则",
+    executionRule: "执行口径",
+    principlePaper: "论文占最好的连续时间。",
+    principleMarket: "股票只在固定窗口与触发条件下处理。",
+    principleCareer: "求职每周固定推进，不挤占论文主块。",
+    principleBody: "运动是恢复，不加码成负担。",
+    codexBridge: "Codex 操作桥",
+    rightDock: "右侧浮窗",
+    openChat: "打开聊天窗",
+    bridgeHint: "网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。",
+    reminders: "提醒",
+    webSide: "网页端",
+    enableNotify: "开启提醒",
+    notifyHint: "所有带具体时间的任务默认提前 10 分钟提醒；网页保持打开时，浏览器提醒和声音可用。",
+    weworkBot: "企业微信机器人",
+    detecting: "检测中",
+    configured: "已配置",
+    notConfigured: "未配置",
+    syncCodexResults: "同步 Codex 关键结果",
+    sendTest: "发送测试",
+    weworkHintOn: "推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。",
+    weworkHintOff: "未检测到企业微信 webhook 配置，先在 .env 中配置 WEWORK_WEBHOOK_URL。",
+    colors: "配色",
+    theme: "主题",
+    messageCodex: "给 Codex 留言",
+    collapse: "收起",
+    inboxPlaceholder: "把任务、想法、提醒直接写在这里...",
+    send: "发送",
+    refresh: "刷新",
+    noInbox: "暂无留言。这里写下来的内容会进 SQLite，Codex 处理时会显示流程。",
+    processing: "处理中",
+    done: "已完成",
+    pending: "待处理",
+    operationError: "操作异常",
+    liveOutput: "实时输出",
+    operationResult: "操作结果",
+    codexProcessing: "Codex 正在处理，结果会自动显示在这里。",
+    process: "处理过程",
+    records: count => `${count} 条`,
+    handled: "已处理",
+    markHandled: "标记处理",
+    manuallyMarked: "网页端手动标记为已处理。",
+    received: "收到",
+    thinking: "思考",
+    command: "命令",
+    output: "输出",
+    result: "结果",
+    error: "异常",
+    startEvent: "开始",
+    doneEvent: "完成",
+    session: "会话",
+    progress: "进度",
+    reasoningDone: "完成一段推理。",
+    commandDone: "完成一次命令执行。",
+    processingShort: "处理中。",
+    archiveBadge: value => `归档 ${value}`,
+    emptyArchiveTitle: "暂无已完成归档",
+    emptyArchiveNote: "勾选完成的任务会自动进入这里。",
+    notificationUnsupported: "浏览器不支持系统通知",
+    notificationFallback: "网页弹窗和声音提醒仍可用。",
+    notificationEnabled: "提醒已开启",
+    notificationDisabled: "未开启系统通知",
+    notificationHint: "网页保持打开时，到点会提醒。",
+    sentToInbox: "已发送到 Codex 收件箱",
+    sentToInboxHint: "我后续会读取并处理。",
+    weworkEnabled: "企业微信同步已开启",
+    weworkDisabled: "企业微信同步已关闭",
+    settingSaved: "设置已保存到本地数据库。",
+    testSent: "测试消息已发送",
+    testFailed: "测试消息发送失败",
+    checkWeWork: "去企业微信里看一下机器人消息。",
+    checkWebhook: "检查 webhook 配置或网络。",
+    pageOverview: "总览",
+    pageTasks: "任务",
+    pageArchive: "归档",
+    pageFocus: "专注",
+    pageBridge: "Codex",
+    pageSettings: "设置",
+    titleOverview: "今日任务展示",
+    titleTasks: "任务流",
+    titleArchive: "已完成归档",
+    titleFocus: "番茄钟与时间块",
+    titleBridge: "Codex 操作桥",
+    titleSettings: "提醒与机器人",
+    themeAir: "系统浅色",
+    themePaper: "纸墨",
+    themeTerminal: "终端绿",
+    themeDeepsea: "金融深海",
+    themeMorning: "晨间",
+    themeSlate: "冷灰",
+    trackAll: "全部",
+    trackPaper: "论文",
+    trackMarket: "股票",
+    trackCareer: "求职",
+    trackOps: "安全员",
+    trackBody: "运动/生活",
+    trackMeeting: "会议",
+    timelineMarketOpen: "股票开盘检查，只看触发条件",
+    timelineLightTask: "番茄钟：会前只做一个轻任务",
+    timelineMeeting: "跟张欢开会",
+    timelineDeepWork: "论文/工作深度块，单任务推进",
+    timelineMarketClose: "午盘前检查，不延长",
+    timelineAfternoon: "论文、求职材料或项目推进，三选一",
+    timelineEvening: "轻任务：best paper、简历、复盘，三选一",
+  },
+  en: {
+    appTitle: "Personal Task Deck",
+    languageToggle: "中",
+    beijingTime: "Beijing Time",
+    nearestDdl: "Nearest DDL",
+    calculating: "Calculating",
+    expired: "Expired",
+    remaining: (days, hours) => `${days}d ${hours}h left`,
+    todayOpen: "Open Today",
+    unfinishedItems: "unfinished items",
+    stockTheme: "Market Theme",
+    techRotation: "Tech Rotation",
+    triggerOnly: "Trigger-based, no all-day watching",
+    trainingRate: "Training Rate",
+    trainingRateNote: "Badminton once, gym once",
+    tasks: "Tasks",
+    archive: "Archive",
+    pomodoro: "Pomodoro",
+    bridge: "Bridge",
+    remindersBot: "Reminders/Bot",
+    todayMainline: "Today's Mainline",
+    priority: "Priority",
+    timeBlocks: "Time Blocks",
+    oneSlotOneTask: "One slot, one task",
+    resetChecks: "Reset Checks",
+    allTracks: "All Tracks",
+    completedArchive: "Completed Archive",
+    itemCount: count => `${count} items`,
+    focus: "Focus",
+    break: "Break",
+    currentTask: title => `Current: ${title}`,
+    noCurrentTask: "Current: choose a task to start",
+    start: "Start",
+    pause: "Pause",
+    reset: "Reset",
+    suggestion: "Suggestion",
+    weeklyPrinciples: "Weekly Principles",
+    executionRule: "Execution Rule",
+    principlePaper: "Reserve the best continuous blocks for papers.",
+    principleMarket: "Handle stocks only in fixed windows and trigger conditions.",
+    principleCareer: "Move job search forward weekly without taking over paper blocks.",
+    principleBody: "Exercise is recovery, not another burden.",
+    codexBridge: "Codex Bridge",
+    rightDock: "Right Dock",
+    openChat: "Open Chat",
+    bridgeHint: "Use the web UI for input and process details; WeWork mirrors key results to mobile.",
+    reminders: "Reminders",
+    webSide: "Web",
+    enableNotify: "Enable Notifications",
+    notifyHint: "Timed tasks remind 10 minutes early by default; browser alerts and sound work while the page stays open.",
+    weworkBot: "WeWork Bot",
+    detecting: "Checking",
+    configured: "Configured",
+    notConfigured: "Not configured",
+    syncCodexResults: "Sync key Codex results",
+    sendTest: "Send Test",
+    weworkHintOn: "Pushes received, live output, final result, and errors; detailed process stays on the web.",
+    weworkHintOff: "No WeWork webhook detected. Configure WEWORK_WEBHOOK_URL in .env first.",
+    colors: "Colors",
+    theme: "Theme",
+    messageCodex: "Message Codex",
+    collapse: "Collapse",
+    inboxPlaceholder: "Write tasks, ideas, reminders here...",
+    send: "Send",
+    refresh: "Refresh",
+    noInbox: "No messages yet. Messages here are stored in SQLite and show Codex progress.",
+    processing: "Processing",
+    done: "Done",
+    pending: "Pending",
+    operationError: "Operation Error",
+    liveOutput: "Live Output",
+    operationResult: "Result",
+    codexProcessing: "Codex is working. The result will appear here automatically.",
+    process: "Process",
+    records: count => `${count} records`,
+    handled: "Handled",
+    markHandled: "Mark Handled",
+    manuallyMarked: "Marked as handled from the web UI.",
+    received: "Received",
+    thinking: "Thinking",
+    command: "Command",
+    output: "Output",
+    result: "Result",
+    error: "Error",
+    startEvent: "Start",
+    doneEvent: "Done",
+    session: "Session",
+    progress: "Progress",
+    reasoningDone: "Finished a reasoning step.",
+    commandDone: "Finished a command execution.",
+    processingShort: "Processing.",
+    archiveBadge: value => `Archived ${value}`,
+    emptyArchiveTitle: "No completed archive",
+    emptyArchiveNote: "Completed tasks will automatically move here.",
+    notificationUnsupported: "Browser notifications are unsupported",
+    notificationFallback: "Web toast and sound reminders still work.",
+    notificationEnabled: "Notifications enabled",
+    notificationDisabled: "Notifications not enabled",
+    notificationHint: "Keep the page open to receive reminders.",
+    sentToInbox: "Sent to Codex inbox",
+    sentToInboxHint: "I will read and process it later.",
+    weworkEnabled: "WeWork sync enabled",
+    weworkDisabled: "WeWork sync disabled",
+    settingSaved: "Setting saved to local database.",
+    testSent: "Test message sent",
+    testFailed: "Test message failed",
+    checkWeWork: "Check the bot message in WeWork.",
+    checkWebhook: "Check webhook config or network.",
+    pageOverview: "Overview",
+    pageTasks: "Tasks",
+    pageArchive: "Archive",
+    pageFocus: "Focus",
+    pageBridge: "Codex",
+    pageSettings: "Settings",
+    titleOverview: "Today's Task Deck",
+    titleTasks: "Task Flow",
+    titleArchive: "Completed Archive",
+    titleFocus: "Pomodoro and Time Blocks",
+    titleBridge: "Codex Bridge",
+    titleSettings: "Reminders and Bot",
+    themeAir: "System Light",
+    themePaper: "Paper",
+    themeTerminal: "Terminal Green",
+    themeDeepsea: "Deep Sea",
+    themeMorning: "Morning",
+    themeSlate: "Cool Gray",
+    trackAll: "All",
+    trackPaper: "Paper",
+    trackMarket: "Market",
+    trackCareer: "Career",
+    trackOps: "Ops",
+    trackBody: "Body/Life",
+    trackMeeting: "Meeting",
+    timelineMarketOpen: "Market open check, triggers only",
+    timelineLightTask: "Pomodoro: one light task before the meeting",
+    timelineMeeting: "Meeting with Zhang Huan",
+    timelineDeepWork: "Paper/work deep block, single-task only",
+    timelineMarketClose: "Pre-noon market check, do not extend",
+    timelineAfternoon: "Choose one: paper, career material, or project work",
+    timelineEvening: "Light task: best paper, resume, or review",
+  },
+};
+const langKey = "task-deck-language-v1";
+let currentLang = localStorage.getItem(langKey) || "zh";
+if (!i18n[currentLang]) currentLang = "zh";
+document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+
+function t(key, ...args) {
+  const value = i18n[currentLang][key] ?? i18n.zh[key] ?? key;
+  return typeof value === "function" ? value(...args) : value;
+}
+
 const themes = [
-  { id: "air", label: "系统浅色" },
-  { id: "paper", label: "纸墨" },
-  { id: "terminal", label: "终端绿" },
-  { id: "deepsea", label: "金融深海" },
-  { id: "morning", label: "晨间" },
-  { id: "slate", label: "冷灰" },
+  { id: "air", labelKey: "themeAir" },
+  { id: "paper", labelKey: "themePaper" },
+  { id: "terminal", labelKey: "themeTerminal" },
+  { id: "deepsea", labelKey: "themeDeepsea" },
+  { id: "morning", labelKey: "themeMorning" },
+  { id: "slate", labelKey: "themeSlate" },
 ];
 const themeKey = "task-deck-theme-v2";
 let currentTheme = localStorage.getItem(themeKey) || "air";
@@ -67,11 +361,11 @@ function checkReminders() {
 function bindNotifications() {
   document.querySelector("#enableNotify")?.addEventListener("click", async () => {
     if (!("Notification" in window)) {
-      showReminder({ title: "浏览器不支持系统通知", body: "网页弹窗和声音提醒仍可用。" });
+      showReminder({ title: t("notificationUnsupported"), body: t("notificationFallback") });
       return;
     }
     const permission = await Notification.requestPermission();
-    showReminder({ title: permission === "granted" ? "提醒已开启" : "未开启系统通知", body: "网页保持打开时，到点会提醒。" });
+    showReminder({ title: permission === "granted" ? t("notificationEnabled") : t("notificationDisabled"), body: t("notificationHint") });
   });
 }
 
@@ -124,18 +418,18 @@ function scrollInboxToBottom() {
 
 function processEventView(event) {
   const content = String(event.content || "");
-  if (event.event_type === "received") return { label: "收到", kind: "received", content };
-  if (event.event_type === "thinking") return { label: "思考", kind: "thinking", content };
-  if (event.event_type === "command") return { label: "命令", kind: "command", content };
-  if (event.event_type === "stream") return { label: "输出", kind: "stream", content };
-  if (event.event_type === "reply") return { label: "结果", kind: "reply", content };
-  if (event.event_type === "error") return { label: "异常", kind: "error", content };
-  if (content.includes("reasoning")) return { label: "思考", kind: "thinking", content: "完成一段推理。" };
-  if (content.includes("command_execution")) return { label: "命令", kind: "command", content: "完成一次命令执行。" };
-  if (content.includes("Codex 已开始")) return { label: "开始", kind: "start", content };
-  if (content.includes("Codex 本轮处理完成")) return { label: "完成", kind: "done", content };
-  if (content.includes("Codex 会话")) return { label: "会话", kind: "session", content };
-  return { label: "进度", kind: "status", content };
+  if (event.event_type === "received") return { label: t("received"), kind: "received", content };
+  if (event.event_type === "thinking") return { label: t("thinking"), kind: "thinking", content };
+  if (event.event_type === "command") return { label: t("command"), kind: "command", content };
+  if (event.event_type === "stream") return { label: t("output"), kind: "stream", content };
+  if (event.event_type === "reply") return { label: t("result"), kind: "reply", content };
+  if (event.event_type === "error") return { label: t("error"), kind: "error", content };
+  if (content.includes("reasoning")) return { label: t("thinking"), kind: "thinking", content: t("reasoningDone") };
+  if (content.includes("command_execution")) return { label: t("command"), kind: "command", content: t("commandDone") };
+  if (content.includes("Codex 已开始")) return { label: t("startEvent"), kind: "start", content };
+  if (content.includes("Codex 本轮处理完成")) return { label: t("doneEvent"), kind: "done", content };
+  if (content.includes("Codex 会话")) return { label: t("session"), kind: "session", content };
+  return { label: t("progress"), kind: "status", content };
 }
 
 function isTranscriptMessage(view) {
@@ -144,7 +438,7 @@ function isTranscriptMessage(view) {
 
 function compactProcessContent(content) {
   const text = String(content || "").replace(/\s+/g, " ").trim();
-  if (!text) return "处理中。";
+  if (!text) return t("processingShort");
   return text.length > 150 ? `${text.slice(0, 150)}...` : text;
 }
 
@@ -173,7 +467,7 @@ function renderInbox() {
   if (count) count.textContent = String(inboxMessages.filter(msg => msg.status !== 'done').length);
   if (!list) return;
   if (!inboxMessages.length) {
-    list.innerHTML = '<div class="inbox-item"><p>暂无留言。这里写下来的内容会进 SQLite，Codex 处理时会显示流程。</p></div>';
+    list.innerHTML = `<div class="inbox-item"><p>${escapeHtml(t("noInbox"))}</p></div>`;
     return;
   }
   const shouldStickToBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 96;
@@ -186,23 +480,23 @@ function renderInbox() {
     const result = finalReply || finalError || (msg.status === 'processing' ? latestStream : null);
     return `
     <article class="inbox-item ${msg.status === 'done' ? 'done' : ''}">
-      <div class="inbox-status ${msg.status}">${msg.status === 'processing' ? '处理中' : msg.status === 'done' ? '已完成' : '待处理'}</div>
+      <div class="inbox-status ${msg.status}">${msg.status === 'processing' ? t("processing") : msg.status === 'done' ? t("done") : t("pending")}</div>
       <p class="inbox-question">${escapeHtml(msg.content)}</p>
       ${result ? `
         <div class="operation-result ${result.event_type === 'error' ? 'error' : ''}">
-          <span>${result.event_type === 'error' ? '操作异常' : result.event_type === 'stream' ? '实时输出' : '操作结果'}</span>
+          <span>${result.event_type === 'error' ? t("operationError") : result.event_type === 'stream' ? t("liveOutput") : t("operationResult")}</span>
           <p>${escapeHtml(result.content)}</p>
         </div>
       ` : msg.status === 'processing' ? `
         <div class="operation-result pending">
-          <span>处理中</span>
-          <p>Codex 正在处理，结果会自动显示在这里。</p>
+          <span>${t("processing")}</span>
+          <p>${escapeHtml(t("codexProcessing"))}</p>
         </div>
       ` : ''}
       <details class="codex-process" ${msg.status === 'processing' ? 'open' : ''}>
         <summary>
-          <span>处理过程</span>
-          <strong>${events.length} 条</strong>
+          <span>${t("process")}</span>
+          <strong>${escapeHtml(t("records", events.length))}</strong>
         </summary>
         <div class="codex-transcript">
           ${events.slice(-24).map(renderProcessEvent).join('')}
@@ -210,7 +504,7 @@ function renderInbox() {
       </details>
       <div class="inbox-meta">
         <span>${msg.created_at}</span>
-        <button class="inbox-done" data-inbox-done="${msg.id}" type="button">${msg.status === 'done' ? '已处理' : '标记处理'}</button>
+        <button class="inbox-done" data-inbox-done="${msg.id}" type="button">${msg.status === 'done' ? t("handled") : t("markHandled")}</button>
       </div>
     </article>
   `}).join('');
@@ -220,7 +514,7 @@ function renderInbox() {
       await fetch(`/api/inbox/${encodeURIComponent(button.dataset.inboxDone)}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status: 'done', event: '网页端手动标记为已处理。' }),
+        body: JSON.stringify({ status: 'done', event: t("manuallyMarked") }),
       });
       fetchInbox();
     });
@@ -272,7 +566,7 @@ function bindInbox() {
         const data = await response.json();
         inboxMessages = data.messages;
         renderInbox();
-        showReminder({ title: '已发送到 Codex 收件箱', body: '我后续会读取并处理。' });
+        showReminder({ title: t("sentToInbox"), body: t("sentToInboxHint") });
       }
     } finally {
       if (button) button.disabled = false;
@@ -307,7 +601,7 @@ function renderWeWorkStatus() {
   const toggle = document.querySelector('#weworkBridgeToggle');
   const test = document.querySelector('#testWeWork');
   const hint = document.querySelector('#weworkHint');
-  if (text) text.textContent = weworkStatus.configured ? '已配置' : '未配置';
+  if (text) text.textContent = weworkStatus.configured ? t("configured") : t("notConfigured");
   if (toggle) {
     toggle.checked = Boolean(weworkStatus.bridge_enabled);
     toggle.disabled = !weworkStatus.configured;
@@ -315,8 +609,8 @@ function renderWeWorkStatus() {
   if (test) test.disabled = !weworkStatus.configured;
   if (hint) {
     hint.textContent = weworkStatus.configured
-      ? '推送收到、实时输出、最终结果和异常；细碎思考过程只留在网页。'
-      : '未检测到企业微信 webhook 配置，先在 .env 中配置 WEWORK_WEBHOOK_URL。';
+      ? t("weworkHintOn")
+      : t("weworkHintOff");
   }
 }
 
@@ -331,7 +625,7 @@ function bindWeWork() {
     if (response.ok) {
       weworkStatus = await response.json();
       renderWeWorkStatus();
-      showReminder({ title: enabled ? '企业微信同步已开启' : '企业微信同步已关闭', body: '设置已保存到本地数据库。' });
+      showReminder({ title: enabled ? t("weworkEnabled") : t("weworkDisabled"), body: t("settingSaved") });
     }
   });
 
@@ -341,8 +635,8 @@ function bindWeWork() {
     try {
       const response = await fetch('/api/wework/test', { method: 'POST' });
       showReminder({
-        title: response.ok ? '测试消息已发送' : '测试消息发送失败',
-        body: response.ok ? '去企业微信里看一下机器人消息。' : '检查 webhook 配置或网络。',
+        title: response.ok ? t("testSent") : t("testFailed"),
+        body: response.ok ? t("checkWeWork") : t("checkWebhook"),
       });
     } finally {
       if (button) button.disabled = !weworkStatus.configured;
@@ -351,13 +645,13 @@ function bindWeWork() {
 }
 
 const tracks = [
-  { id: "all", label: "全部", short: "ALL" },
-  { id: "paper", label: "论文", short: "PAPER" },
-  { id: "market", label: "股票", short: "MKT" },
-  { id: "career", label: "求职", short: "JOB" },
-  { id: "ops", label: "安全员", short: "OPS" },
-  { id: "body", label: "运动/生活", short: "LIFE" },
-  { id: "meeting", label: "会议", short: "MEET" },
+  { id: "all", labelKey: "trackAll", short: "ALL" },
+  { id: "paper", labelKey: "trackPaper", short: "PAPER" },
+  { id: "market", labelKey: "trackMarket", short: "MKT" },
+  { id: "career", labelKey: "trackCareer", short: "JOB" },
+  { id: "ops", labelKey: "trackOps", short: "OPS" },
+  { id: "body", labelKey: "trackBody", short: "LIFE" },
+  { id: "meeting", labelKey: "trackMeeting", short: "MEET" },
 ];
 
 const seedTasks = [
@@ -379,13 +673,13 @@ const seedTasks = [
 let tasks = [...seedTasks];
 
 const timeline = [
-  ["09:25", "股票开盘检查，只看触发条件"],
-  ["09:45", "番茄钟：会前只做一个轻任务"],
-  ["10:00", "跟张欢开会"],
-  ["10:45", "论文/工作深度块，单任务推进"],
-  ["11:20", "午盘前检查，不延长"],
-  ["15:00", "论文、求职材料或项目推进，三选一"],
-  ["20:30", "轻任务：best paper、简历、复盘，三选一"],
+  ["09:25", "timelineMarketOpen"],
+  ["09:45", "timelineLightTask"],
+  ["10:00", "timelineMeeting"],
+  ["10:45", "timelineDeepWork"],
+  ["11:20", "timelineMarketClose"],
+  ["15:00", "timelineAfternoon"],
+  ["20:30", "timelineEvening"],
 ];
 
 let active = "all";
@@ -398,12 +692,12 @@ let selectedTaskId = null;
 let activePage = location.hash.replace("#", "") || "overview";
 
 const pages = [
-  { id: "overview", label: "总览", short: "HOME", title: "今日任务展示", kicker: "PERSONAL OPERATING BOARD" },
-  { id: "tasks", label: "任务", short: "TASK", title: "任务流", kicker: "TRACKED WORK" },
-  { id: "archive", label: "归档", short: "ARC", title: "已完成归档", kicker: "COMPLETED WORK" },
-  { id: "focus", label: "专注", short: "FOCUS", title: "番茄钟与时间块", kicker: "ONE SLOT ONE TASK" },
-  { id: "bridge", label: "Codex", short: "CODEX", title: "Codex 操作桥", kicker: "MESSAGE AND PROCESS" },
-  { id: "settings", label: "设置", short: "SETUP", title: "提醒与机器人", kicker: "LOCAL CONTROL" },
+  { id: "overview", labelKey: "pageOverview", short: "HOME", titleKey: "titleOverview", kicker: "PERSONAL OPERATING BOARD" },
+  { id: "tasks", labelKey: "pageTasks", short: "TASK", titleKey: "titleTasks", kicker: "TRACKED WORK" },
+  { id: "archive", labelKey: "pageArchive", short: "ARC", titleKey: "titleArchive", kicker: "COMPLETED WORK" },
+  { id: "focus", labelKey: "pageFocus", short: "FOCUS", titleKey: "titleFocus", kicker: "ONE SLOT ONE TASK" },
+  { id: "bridge", labelKey: "pageBridge", short: "CODEX", titleKey: "titleBridge", kicker: "MESSAGE AND PROCESS" },
+  { id: "settings", labelKey: "pageSettings", short: "SETUP", titleKey: "titleSettings", kicker: "LOCAL CONTROL" },
 ];
 
 const pageNav = document.querySelector("#pageNav");
@@ -412,14 +706,31 @@ const taskList = document.querySelector("#taskList");
 const activeTrackLabel = document.querySelector("#activeTrackLabel");
 
 function trackLabel(id) {
-  return tracks.find(t => t.id === id)?.label || id;
+  const track = tracks.find(item => item.id === id);
+  return track ? t(track.labelKey) : id;
+}
+
+function applyStaticText() {
+  document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+  document.title = t("appTitle");
+  document.querySelectorAll("[data-i18n]").forEach(element => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+    element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+  });
+  const button = document.querySelector("#languageToggle");
+  if (button) {
+    button.textContent = t("languageToggle");
+    button.setAttribute("aria-label", currentLang === "zh" ? "Switch to English" : "切换到中文");
+  }
 }
 
 
 function renderThemes() {
   const pickers = [document.querySelector("#themePicker"), document.querySelector("#themePickerPanel")].filter(Boolean);
   if (!pickers.length) return;
-  const html = themes.map(theme => `<button class="theme-button ${currentTheme === theme.id ? "active" : ""}" data-theme="${theme.id}" type="button">${theme.label}</button>`).join("");
+  const html = themes.map(theme => `<button class="theme-button ${currentTheme === theme.id ? "active" : ""}" data-theme="${theme.id}" type="button">${t(theme.labelKey)}</button>`).join("");
   for (const picker of pickers) picker.innerHTML = html;
   document.querySelectorAll("[data-theme]").forEach(button => {
     button.addEventListener("click", () => {
@@ -434,7 +745,7 @@ function renderThemes() {
 function renderPageNav() {
   if (!pages.some(page => page.id === activePage)) activePage = "overview";
   const current = pages.find(page => page.id === activePage);
-  document.querySelector("#pageTitle").textContent = current.title;
+  document.querySelector("#pageTitle").textContent = t(current.titleKey);
   document.querySelector("#pageKicker").textContent = current.kicker;
 
   pageNav.innerHTML = pages.map(page => {
@@ -443,7 +754,7 @@ function renderPageNav() {
       : page.id === "archive"
         ? tasks.filter(task => task.archived_at).length
         : page.short;
-    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${page.label}</span><strong>${count}</strong></button>`;
+    return `<button class="track-button ${activePage === page.id ? "active" : ""}" data-page-link="${page.id}" type="button"><span>${t(page.labelKey)}</span><strong>${count}</strong></button>`;
   }).join("");
 
   document.querySelectorAll("[data-page-link]").forEach(button => {
@@ -481,7 +792,7 @@ function taskCardHtml(task) {
       <div class="task-meta">
         <span class="badge">${trackLabel(task.track)}</span>
         <span class="badge">${escapeHtml(task.date)}</span>
-        ${isArchived ? `<span class="badge">归档 ${escapeHtml(task.archived_at)}</span>` : ""}
+        ${isArchived ? `<span class="badge">${escapeHtml(t("archiveBadge", task.archived_at))}</span>` : ""}
         <span>${escapeHtml(task.note)}</span>
       </div>
     </div>
@@ -512,7 +823,7 @@ function bindTaskCards(root = document) {
 function renderTasks() {
   const activeTasks = tasks.filter(t => !t.archived_at);
   const visible = active === "all" ? activeTasks : activeTasks.filter(t => t.track === active);
-  activeTrackLabel.textContent = active === "all" ? "全部轨道" : trackLabel(active);
+  activeTrackLabel.textContent = active === "all" ? t("allTracks") : trackLabel(active);
   taskList.innerHTML = visible.map(taskCardHtml).join("");
   bindTaskCards(taskList);
 }
@@ -524,10 +835,10 @@ function renderArchive() {
   const archived = tasks
     .filter(task => task.archived_at)
     .sort((a, b) => String(b.archived_at).localeCompare(String(a.archived_at)));
-  if (archiveCount) archiveCount.textContent = `${archived.length} 项`;
+  if (archiveCount) archiveCount.textContent = t("itemCount", archived.length);
   archiveList.innerHTML = archived.length
     ? archived.map(taskCardHtml).join("")
-    : `<article class="task-card empty"><div><p class="task-title">暂无已完成归档</p><div class="task-meta"><span>勾选完成的任务会自动进入这里。</span></div></div></article>`;
+    : `<article class="task-card empty"><div><p class="task-title">${escapeHtml(t("emptyArchiveTitle"))}</p><div class="task-meta"><span>${escapeHtml(t("emptyArchiveNote"))}</span></div></div></article>`;
   bindTaskCards(archiveList);
 }
 
@@ -543,8 +854,8 @@ function renderOverview() {
   }
   const overviewTimeline = document.querySelector("#overviewTimeline");
   if (overviewTimeline) {
-    overviewTimeline.innerHTML = timeline.map(([time, text]) => `
-      <div class="time-row"><strong>${time}</strong><p>${text}</p></div>
+    overviewTimeline.innerHTML = timeline.map(([time, key]) => `
+      <div class="time-row"><strong>${time}</strong><p>${t(key)}</p></div>
     `).join("");
   }
 }
@@ -559,8 +870,8 @@ function renderStats() {
 }
 
 function renderTimeline() {
-  document.querySelector("#timeline").innerHTML = timeline.map(([time, text]) => `
-    <div class="time-row"><strong>${time}</strong><p>${text}</p></div>
+  document.querySelector("#timeline").innerHTML = timeline.map(([time, key]) => `
+    <div class="time-row"><strong>${time}</strong><p>${t(key)}</p></div>
   `).join("");
 }
 
@@ -568,12 +879,12 @@ function renderDeadline() {
   const target = new Date("2026-05-31T19:59:00+08:00");
   const diff = target - new Date();
   if (diff <= 0) {
-    document.querySelector("#deadlineRemain").textContent = "已到期";
+    document.querySelector("#deadlineRemain").textContent = t("expired");
     return;
   }
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
-  document.querySelector("#deadlineRemain").textContent = `剩 ${days} 天 ${hours} 小时`;
+  document.querySelector("#deadlineRemain").textContent = t("remaining", days, hours);
 }
 
 function tickClock() {
@@ -595,8 +906,8 @@ function renderPomodoro() {
   if (!time || !mode || !task) return;
   const selected = tasks.find(t => t.id === selectedTaskId);
   time.textContent = formatPomo(pomoSeconds);
-  mode.textContent = pomoMode === "focus" ? "专注" : "休息";
-  task.textContent = selected ? `当前：${selected.title}` : "当前：选择一个任务开始";
+  mode.textContent = pomoMode === "focus" ? t("focus") : t("break");
+  task.textContent = selected ? t("currentTask", selected.title) : t("noCurrentTask");
 }
 
 function startPomodoro() {
@@ -631,7 +942,18 @@ function bindPomodoro() {
   document.querySelector("#pomoReset")?.addEventListener("click", resetPomodoro);
 }
 
+function bindLanguage() {
+  document.querySelector("#languageToggle")?.addEventListener("click", () => {
+    currentLang = currentLang === "zh" ? "en" : "zh";
+    localStorage.setItem(langKey, currentLang);
+    render();
+    renderInbox();
+    renderWeWorkStatus();
+  });
+}
+
 function render() {
+  applyStaticText();
   renderThemes();
   renderPageNav();
   renderTrackFilters();
@@ -705,6 +1027,7 @@ bindChatDock();
 bindInbox();
 bindInboxStream();
 bindWeWork();
+bindLanguage();
 fetchInbox();
 fetchWeWorkStatus();
 tickClock();
