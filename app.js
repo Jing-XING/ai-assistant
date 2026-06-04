@@ -45,6 +45,7 @@ const i18n = {
     reset: "重置",
     suggestion: "建议",
     weeklyPrinciples: "本周原则",
+    focusQueue: "专注队列",
     executionRule: "执行口径",
     principlePaper: "论文占最好的连续时间。",
     principleMarket: "股票只在固定窗口与触发条件下处理。",
@@ -125,19 +126,16 @@ const i18n = {
     pageTasks: "任务",
     pageArchive: "归档",
     pageFocus: "专注",
-    pageBridge: "Codex",
     pageSettings: "设置",
     titleOverview: "今日",
     titleTasks: "任务",
     titleArchive: "归档",
     titleFocus: "专注",
-    titleBridge: "Codex",
     titleSettings: "设置",
     kickerOverview: "看板",
     kickerTasks: "追踪",
     kickerArchive: "完成",
     kickerFocus: "计时",
-    kickerBridge: "对话",
     kickerSettings: "偏好",
     jumpTasksMeta: "任务",
     jumpArchiveMeta: "归档",
@@ -210,6 +208,7 @@ const i18n = {
     reset: "Reset",
     suggestion: "Suggestion",
     weeklyPrinciples: "Weekly Principles",
+    focusQueue: "Focus Queue",
     executionRule: "Execution Rule",
     principlePaper: "Reserve the best continuous blocks for papers.",
     principleMarket: "Handle stocks only in fixed windows and trigger conditions.",
@@ -290,19 +289,16 @@ const i18n = {
     pageTasks: "Tasks",
     pageArchive: "Archive",
     pageFocus: "Focus",
-    pageBridge: "Codex",
     pageSettings: "Settings",
     titleOverview: "Today",
     titleTasks: "Tasks",
     titleArchive: "Archive",
     titleFocus: "Focus",
-    titleBridge: "Codex",
     titleSettings: "Settings",
     kickerOverview: "Board",
     kickerTasks: "Track",
     kickerArchive: "Done",
     kickerFocus: "Timer",
-    kickerBridge: "Chat",
     kickerSettings: "Prefs",
     jumpTasksMeta: "Tasks",
     jumpArchiveMeta: "Archive",
@@ -342,14 +338,12 @@ function t(key, ...args) {
 
 const themes = [
   { id: "air", labelKey: "themeAir", swatch: "#f5f6f8" },
-  { id: "paper", labelKey: "themePaper", swatch: "#f4efe5" },
-  { id: "terminal", labelKey: "themeTerminal", swatch: "#07130f" },
   { id: "deepsea", labelKey: "themeDeepsea", swatch: "#0b1220" },
-  { id: "morning", labelKey: "themeMorning", swatch: "#fbf5ec" },
   { id: "slate", labelKey: "themeSlate", swatch: "#eef1f2" },
 ];
 const themeKey = "task-deck-theme-v2";
 let currentTheme = localStorage.getItem(themeKey) || "air";
+if (!themes.some(theme => theme.id === currentTheme)) currentTheme = "air";
 document.body.dataset.theme = currentTheme;
 const chatDockKey = "task-deck-chat-dock-open-v1";
 const railWidthKey = "task-deck-rail-width-v1";
@@ -817,7 +811,6 @@ const pages = [
   { id: "tasks", labelKey: "pageTasks", short: "TASK", railIcon: "T", titleKey: "titleTasks", kickerKey: "kickerTasks" },
   { id: "archive", labelKey: "pageArchive", short: "ARC", railIcon: "A", titleKey: "titleArchive", kickerKey: "kickerArchive" },
   { id: "focus", labelKey: "pageFocus", short: "FOCUS", railIcon: "F", titleKey: "titleFocus", kickerKey: "kickerFocus" },
-  { id: "bridge", labelKey: "pageBridge", short: "CODEX", railIcon: "C", titleKey: "titleBridge", kickerKey: "kickerBridge" },
   { id: "settings", labelKey: "pageSettings", short: "SETUP", railIcon: "S", titleKey: "titleSettings", kickerKey: "kickerSettings" },
 ];
 
@@ -1048,7 +1041,7 @@ function renderOverview() {
     const priorityTasks = tasks
       .filter(task => !task.done && !task.archived_at)
       .sort((a, b) => (a.p || "P2").localeCompare(b.p || "P2") || (a.sort_order || 999) - (b.sort_order || 999))
-      .slice(0, 6);
+      .slice(0, 5);
     overviewTasks.innerHTML = priorityTasks.map(taskCardHtml).join("");
     bindTaskCards(overviewTasks);
   }
@@ -1058,6 +1051,19 @@ function renderOverview() {
       <div class="time-row"><strong>${time}</strong><p>${t(key)}</p></div>
     `).join("");
   }
+}
+
+function renderFocusQueue() {
+  const focusQueue = document.querySelector("#focusQueue");
+  if (!focusQueue) return;
+  const queue = tasks
+    .filter(task => !task.done && !task.archived_at)
+    .sort((a, b) => (a.p || "P2").localeCompare(b.p || "P2") || (a.sort_order || 999) - (b.sort_order || 999))
+    .slice(0, 5);
+  focusQueue.innerHTML = queue.length
+    ? queue.map(taskCardHtml).join("")
+    : `<article class="task-card empty"><div><p class="task-title">${escapeHtml(t("noCurrentTask"))}</p></div></article>`;
+  bindTaskCards(focusQueue);
 }
 
 function renderStats() {
@@ -1160,6 +1166,7 @@ function render() {
   renderPageNav();
   renderTrackFilters();
   renderOverview();
+  renderFocusQueue();
   renderTasks();
   renderArchive();
   renderStats();
@@ -1222,6 +1229,7 @@ window.addEventListener("hashchange", () => {
   render();
 });
 
+render();
 fetchTasks().then(render);
 bindPomodoro();
 bindNotifications();

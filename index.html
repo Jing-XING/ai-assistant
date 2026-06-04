@@ -75,10 +75,6 @@
             <span data-i18n="jumpFocusMeta">专注</span>
             <strong data-i18n="pomodoro">番茄钟</strong>
           </button>
-          <button class="jump-tile" data-page-link="bridge" type="button">
-            <span>Codex</span>
-            <strong data-i18n="bridge">操作桥</strong>
-          </button>
           <button class="jump-tile" data-page-link="settings" type="button">
             <span data-i18n="jumpSettingsMeta">设置</span>
             <strong data-i18n="remindersBot">设置</strong>
@@ -142,7 +138,7 @@
         </section>
 
         <section class="page-view" data-page="focus">
-          <div class="split-layout">
+          <div class="focus-workbench">
             <section class="panel-block pomodoro-panel">
               <div class="section-head compact">
                 <h2 data-i18n="pomodoro">番茄钟</h2>
@@ -168,31 +164,27 @@
               <div class="timeline" id="timeline"></div>
             </section>
           </div>
-          <section class="panel-block focus-panel principle-block">
-            <div class="section-head compact">
-              <h2 data-i18n="weeklyPrinciples">本周原则</h2>
-              <span data-i18n="executionRule">执行口径</span>
-            </div>
-            <ul class="principles">
-              <li data-i18n="principlePaper">论文占最好的连续时间。</li>
-              <li data-i18n="principleMarket">股票只在固定窗口与触发条件下处理。</li>
-              <li data-i18n="principleCareer">求职每周固定推进，不挤占论文主块。</li>
-              <li data-i18n="principleBody">运动是恢复，不加码成负担。</li>
-            </ul>
-          </section>
-        </section>
-
-        <section class="page-view" data-page="bridge">
-          <section class="panel-block light-panel bridge-home">
-            <div class="section-head">
-              <h2 data-i18n="codexBridge">Codex</h2>
-              <span data-i18n="rightDock">右侧浮窗</span>
-            </div>
-            <div class="bridge-actions">
-              <button class="ghost-button" id="openChatDock" type="button" data-i18n="openChat">打开聊天窗</button>
-              <span class="setting-note" data-i18n="bridgeHint">网页负责输入与过程查看；企业微信机器人负责把关键处理结果同步到手机。</span>
-            </div>
-          </section>
+          <div class="focus-secondary">
+            <section class="panel-block light-panel">
+              <div class="section-head compact">
+                <h2 data-i18n="focusQueue">专注队列</h2>
+                <span data-i18n="priority">优先级</span>
+              </div>
+              <div class="task-list compact-list" id="focusQueue"></div>
+            </section>
+            <section class="panel-block focus-panel principle-block">
+              <div class="section-head compact">
+                <h2 data-i18n="weeklyPrinciples">本周原则</h2>
+                <span data-i18n="executionRule">执行口径</span>
+              </div>
+              <ul class="principles">
+                <li data-i18n="principlePaper">论文占最好的连续时间。</li>
+                <li data-i18n="principleMarket">股票只在固定窗口与触发条件下处理。</li>
+                <li data-i18n="principleCareer">求职每周固定推进，不挤占论文主块。</li>
+                <li data-i18n="principleBody">运动是恢复，不加码成负担。</li>
+              </ul>
+            </section>
+          </div>
         </section>
 
         <section class="page-view" data-page="settings">
@@ -258,6 +250,6 @@
       </div>
     </section>
     <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=20260603-track-labels"></script>
+    <script src="app.js?v=20260604-ui-polish"></script>
   </body>
 </html>
