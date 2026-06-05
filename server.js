@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT || 8787);
 const ROOT = __dirname;
 const DB_PATH = path.join(ROOT, 'task_dashboard.db');
 const PROGRESS_ROOT = path.resolve(ROOT, '..', 'progress');
+const MARKET_BRIEF_DIR = path.join(ROOT, 'assets', 'market-briefs');
 const db = new DatabaseSync(DB_PATH);
 const ENV_PATH = path.join(ROOT, '.env');
 
@@ -104,6 +105,17 @@ function initDb() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(report_type, period_key)
     );
+    CREATE TABLE IF NOT EXISTS market_briefs (
+      id TEXT PRIMARY KEY,
+      market TEXT NOT NULL,
+      trade_date TEXT NOT NULL,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      image_path TEXT NOT NULL,
+      source_note TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(market, trade_date)
+    );
   `);
   const taskColumns = db.prepare('PRAGMA table_info(tasks)').all().map(column => column.name);
   if (!taskColumns.includes('archived_at')) {
@@ -131,6 +143,7 @@ const mime = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.js', 'application/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
+  ['.svg', 'image/svg+xml; charset=utf-8'],
   ['.db', 'application/octet-stream'],
 ]);
 
@@ -142,6 +155,19 @@ function json(res, status, payload) {
     'cache-control': 'no-store',
   });
   res.end(body);
+}
+
+function htmlJson(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
+function indexHtml(data) {
+  const html = data.toString('utf8');
+  const boot = {
+    marketBriefs: marketBriefRows(),
+  };
+  const script = `<script>window.__TASK_DECK_BOOT__=${htmlJson(boot)};</script>`;
+  return html.replace(/(\s*<script src="app\.js[^"]*"><\/script>)/, `    ${script}$1`);
 }
 
 function readBody(req) {
@@ -397,6 +423,237 @@ function reportRows() {
     LIMIT 60
   `).all();
 }
+
+function pct(value) {
+  const number = Number(value || 0);
+  return `${number > 0 ? '+' : ''}${number.toFixed(2)}%`;
+}
+
+function colorForChange(value) {
+  const number = Number(value || 0);
+  if (number > 0) return '#23815f';
+  if (number < 0) return '#c2473d';
+  return '#6f737c';
+}
+
+function escapeXml(value) {
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&apos;',
+  }[ch]));
+}
+
+function defaultUsBrief(tradeDate) {
+  return {
+    market: 'us',
+    tradeDate,
+    title: `${tradeDate} 美股隔夜复盘`,
+    summary: '三大指数从近期高位回落，能源相对抗跌，金融与科技承压。',
+    sourceNote: '样例口径：指数按公开收盘报道；板块使用 SPDR 行业 ETF 代理，后续可替换为实时行情源。',
+    indices: [
+      { name: 'S&P 500', change: -0.70 },
+      { name: 'Nasdaq', change: -0.90 },
+      { name: 'Dow', change: -1.20 },
+      { name: 'Russell 2000', change: -1.10 },
+    ],
+    sectors: [
+      { name: '能源', change: 1.10 },
+      { name: '公用事业', change: 0.40 },
+      { name: '必选消费', change: 0.20 },
+      { name: '医疗保健', change: -0.10 },
+      { name: '工业', change: -0.50 },
+      { name: '材料', change: -0.60 },
+      { name: '通信服务', change: -0.70 },
+      { name: '房地产', change: -0.80 },
+      { name: '可选消费', change: -0.90 },
+      { name: '信息技术', change: -1.00 },
+      { name: '金融', change: -1.30 },
+    ],
+    leaders: [
+      { name: 'Macy’s', change: 3.8 },
+      { name: 'Phillips 66', change: 2.7 },
+      { name: 'Exxon Mobil', change: 1.4 },
+    ],
+    laggards: [
+      { name: 'Hewlett Packard Enterprise', change: -4.8 },
+      { name: 'Palo Alto Networks', change: -3.9 },
+      { name: 'Tesla', change: -3.2 },
+    ],
+  };
+}
+
+function defaultCnBrief(tradeDate) {
+  return {
+    market: 'cn',
+    tradeDate,
+    title: `${tradeDate} A 股收盘复盘`,
+    summary: '等待 15:00 收盘后生成：指数、行业涨跌幅、领涨领跌个股。',
+    sourceNote: '自动任务占位：后续接入 A 股行情源后替换为真实收盘数据。',
+    indices: [
+      { name: '上证指数', change: 0 },
+      { name: '深证成指', change: 0 },
+      { name: '创业板指', change: 0 },
+      { name: '科创50', change: 0 },
+    ],
+    sectors: [
+      { name: '待收盘', change: 0 },
+      { name: '待更新', change: 0 },
+      { name: '待生成', change: 0 },
+    ],
+    leaders: [
+      { name: '收盘后生成', change: 0 },
+    ],
+    laggards: [
+      { name: '收盘后生成', change: 0 },
+    ],
+  };
+}
+
+function marketBriefSvg(brief) {
+  const width = 1280;
+  const height = 760;
+  const sectors = [...brief.sectors].sort((a, b) => b.change - a.change);
+  const maxAbs = Math.max(1, ...sectors.map(item => Math.abs(Number(item.change || 0))));
+  const sectorRows = sectors.slice(0, 11).map((item, index) => {
+    const y = 276 + index * 34;
+    const barWidth = Math.max(4, Math.abs(item.change) / maxAbs * 210);
+    const x = item.change >= 0 ? 370 : 370 - barWidth;
+    return `
+      <text x="80" y="${y + 17}" class="row-label">${escapeXml(item.name)}</text>
+      <rect x="${x}" y="${y}" width="${barWidth}" height="18" rx="9" fill="${colorForChange(item.change)}" opacity="0.88"/>
+      <text x="610" y="${y + 17}" class="row-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
+    `;
+  }).join('');
+  const indexCards = brief.indices.slice(0, 4).map((item, index) => {
+    const x = 80 + index * 255;
+    return `
+      <g transform="translate(${x},126)">
+        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
+        <text x="22" y="34" class="card-name">${escapeXml(item.name)}</text>
+        <text x="22" y="74" class="card-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
+      </g>
+    `;
+  }).join('');
+  const moverList = (items, x, y, title) => `
+    <text x="${x}" y="${y}" class="mini-title">${escapeXml(title)}</text>
+    ${items.slice(0, 3).map((item, index) => `
+      <g transform="translate(${x},${y + 28 + index * 58})">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">${escapeXml(item.name)}</text>
+        <text x="292" y="31" class="mover-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
+      </g>
+    `).join('')}
+  `;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f8fb"/>
+      <stop offset="1" stop-color="#eef2f4"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.11"/>
+    </filter>
+    <style>
+      .eyebrow { font: 500 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #6d7280; letter-spacing: 0; }
+      .title { font: 700 52px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; letter-spacing: 0; }
+      .summary { font: 400 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #626772; }
+      .card-name { font: 600 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #555b66; }
+      .card-value { font: 750 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .section-title { font: 700 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
+      .row-label { font: 500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #343841; }
+      .row-value { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
+      .mini-title { font: 700 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
+      .mover-name { font: 600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #2d3138; }
+      .mover-value { font: 750 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
+      .source { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #7b8089; }
+    </style>
+  </defs>
+  <rect width="1280" height="760" fill="url(#bg)"/>
+  <circle cx="1120" cy="70" r="190" fill="#d9eee8" opacity="0.55"/>
+  <circle cx="150" cy="710" r="220" fill="#e9edf9" opacity="0.72"/>
+  <rect x="36" y="34" width="1208" height="692" rx="38" fill="rgba(255,255,255,0.72)" filter="url(#shadow)"/>
+  <text x="80" y="86" class="eyebrow">${brief.market === 'us' ? 'US OVERNIGHT MARKET' : 'A-SHARE CLOSE'} · ${escapeXml(brief.tradeDate)} · 北京时间</text>
+  <text x="80" y="144" class="title">${escapeXml(brief.title)}</text>
+  <text x="80" y="188" class="summary">${escapeXml(brief.summary)}</text>
+  ${indexCards}
+  <text x="80" y="260" class="section-title">板块涨跌幅</text>
+  <line x1="370" y1="268" x2="370" y2="656" stroke="#cfd4dc" stroke-width="2"/>
+  ${sectorRows}
+  ${moverList(brief.leaders, 760, 304, '领涨个股')}
+  ${moverList(brief.laggards, 760, 516, '领跌个股')}
+  <text x="80" y="694" class="source">${escapeXml(brief.sourceNote)}</text>
+</svg>`;
+}
+
+function writeMarketBrief(brief) {
+  fs.mkdirSync(MARKET_BRIEF_DIR, { recursive: true });
+  const id = `${brief.market}-${brief.tradeDate}`;
+  const relativePath = `assets/market-briefs/${id}.svg`;
+  fs.writeFileSync(path.join(ROOT, relativePath), marketBriefSvg(brief), 'utf8');
+  db.prepare(`
+    INSERT INTO market_briefs (id, market, trade_date, title, summary, image_path, source_note)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(market, trade_date) DO UPDATE SET
+      title = excluded.title,
+      summary = excluded.summary,
+      image_path = excluded.image_path,
+      source_note = excluded.source_note,
+      created_at = CURRENT_TIMESTAMP
+  `).run(id, brief.market, brief.tradeDate, brief.title, brief.summary, relativePath, brief.sourceNote || '');
+  notifySse({ type: 'market_briefs_updated', brief_id: id });
+  return id;
+}
+
+function ensureSeedMarketBrief() {
+  const id = 'us-2026-06-03';
+  const existing = db.prepare('SELECT id FROM market_briefs WHERE id = ?').get(id);
+  if (!existing || !fs.existsSync(path.join(MARKET_BRIEF_DIR, `${id}.svg`))) {
+    writeMarketBrief(defaultUsBrief('2026-06-03'));
+  }
+}
+
+function marketBriefRows() {
+  return db.prepare(`
+    SELECT id, market, trade_date, title, summary, image_path, source_note, created_at
+    FROM market_briefs
+    ORDER BY trade_date DESC, created_at DESC
+    LIMIT 20
+  `).all();
+}
+
+function previousBeijingDate(date = new Date()) {
+  const previous = new Date(date.getTime() - 24 * 60 * 60 * 1000);
+  return beijingDateString(previous);
+}
+
+function scanMarketBriefJobs() {
+  const now = new Date();
+  const parts = beijingParts(now);
+  if (parts.hour >= 9) {
+    const tradeDate = previousBeijingDate(now);
+    const key = `market_brief_us_${tradeDate}`;
+    if (!getState(key)) {
+      writeMarketBrief(defaultUsBrief(tradeDate));
+      setState(key, '1');
+      sendWeWork(`美股隔夜复盘已生成：${tradeDate}，可在任务看板查看大图。`).catch(error => console.error(error.message));
+    }
+  }
+  if (parts.hour >= 15) {
+    const tradeDate = beijingDateString(now);
+    const key = `market_brief_cn_${tradeDate}`;
+    if (!getState(key)) {
+      writeMarketBrief(defaultCnBrief(tradeDate));
+      setState(key, '1');
+      sendWeWork(`A 股收盘复盘已生成：${tradeDate}，可在任务看板查看大图。`).catch(error => console.error(error.message));
+    }
+  }
+}
+
+ensureSeedMarketBrief();
 
 function scanReportJobs() {
   const now = new Date();
@@ -772,12 +1029,25 @@ async function handleApi(req, res, url) {
     return json(res, 200, { reports: reportRows() });
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/market-briefs') {
+    scanMarketBriefJobs();
+    return json(res, 200, { briefs: marketBriefRows() });
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/reports/generate') {
     const body = await readBody(req);
     const type = body.type === 'monthly' ? 'monthly' : 'weekly';
     const period = type === 'monthly' ? monthPeriod(new Date()) : weekPeriod(new Date());
     ensureReport(period);
     return json(res, 200, { reports: reportRows() });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/market-briefs/generate') {
+    const body = await readBody(req);
+    const market = body.market === 'cn' ? 'cn' : 'us';
+    const tradeDate = body.trade_date || (market === 'cn' ? beijingDateString(new Date()) : previousBeijingDate(new Date()));
+    const id = writeMarketBrief(market === 'cn' ? defaultCnBrief(tradeDate) : defaultUsBrief(tradeDate));
+    return json(res, 200, { id, briefs: marketBriefRows() });
   }
 
   const taskMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)$/);
@@ -839,11 +1109,13 @@ function serveStatic(req, res, url) {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
       return res.end('Not found');
     }
+    const isIndex = path.basename(filePath) === 'index.html';
+    const body = isIndex ? indexHtml(data) : data;
     res.writeHead(200, {
       'content-type': mime.get(path.extname(filePath)) || 'application/octet-stream',
       'cache-control': 'no-cache',
     });
-    res.end(data);
+    res.end(body);
   });
 }
 
@@ -865,8 +1137,10 @@ server.listen(PORT, '0.0.0.0', () => {
   ensureAllReminders();
   scanReminders();
   scanReportJobs();
+  scanMarketBriefJobs();
   scanInboxJobs();
   setInterval(scanReminders, 60_000);
   setInterval(scanReportJobs, 15 * 60_000);
+  setInterval(scanMarketBriefJobs, 5 * 60_000);
   setInterval(scanInboxJobs, 5_000);
 });

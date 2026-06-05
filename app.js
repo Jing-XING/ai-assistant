@@ -21,6 +21,16 @@ const i18n = {
     bridge: "操作桥",
     remindersBot: "设置",
     todayMainline: "今日主线",
+    marketBrief: "市场复盘",
+    marketReview: "股票复盘",
+    marketHistory: "复盘历史",
+    marketBriefEmpty: "暂无市场复盘图",
+    marketBriefEmptyNote: "每天 09:00 生成美股隔夜复盘，15:00 后生成 A 股收盘复盘。",
+    marketUs: "美股",
+    marketCn: "A 股",
+    marketSchedule: "美股 09:00 / A 股 15:00",
+    marketGenerated: value => `生成时间：${value}`,
+    marketSource: value => `口径：${value}`,
     priority: "优先级",
     timeBlocks: "时间块",
     oneSlotOneTask: "单时段单任务",
@@ -123,16 +133,19 @@ const i18n = {
     checkWeWork: "去企业微信里看一下机器人消息。",
     checkWebhook: "检查 webhook 配置或网络。",
     pageOverview: "总览",
+    pageMarket: "股票复盘",
     pageTasks: "任务",
     pageArchive: "归档",
     pageFocus: "专注",
     pageSettings: "设置",
     titleOverview: "今日",
+    titleMarket: "股票复盘",
     titleTasks: "任务",
     titleArchive: "归档",
     titleFocus: "专注",
     titleSettings: "设置",
     kickerOverview: "看板",
+    kickerMarket: "市场",
     kickerTasks: "追踪",
     kickerArchive: "完成",
     kickerFocus: "计时",
@@ -184,6 +197,16 @@ const i18n = {
     bridge: "Bridge",
     remindersBot: "Settings",
     todayMainline: "Today's Mainline",
+    marketBrief: "Market Brief",
+    marketReview: "Market Review",
+    marketHistory: "Brief History",
+    marketBriefEmpty: "No market brief yet",
+    marketBriefEmptyNote: "US overnight brief at 09:00 and A-share close brief after 15:00.",
+    marketUs: "US",
+    marketCn: "A-share",
+    marketSchedule: "US 09:00 / A-share 15:00",
+    marketGenerated: value => `Generated: ${value}`,
+    marketSource: value => `Source: ${value}`,
     priority: "Priority",
     timeBlocks: "Time Blocks",
     oneSlotOneTask: "One slot, one task",
@@ -286,16 +309,19 @@ const i18n = {
     checkWeWork: "Check the bot message in WeWork.",
     checkWebhook: "Check webhook config or network.",
     pageOverview: "Overview",
+    pageMarket: "Market",
     pageTasks: "Tasks",
     pageArchive: "Archive",
     pageFocus: "Focus",
     pageSettings: "Settings",
     titleOverview: "Today",
+    titleMarket: "Market Review",
     titleTasks: "Tasks",
     titleArchive: "Archive",
     titleFocus: "Focus",
     titleSettings: "Settings",
     kickerOverview: "Board",
+    kickerMarket: "Stocks",
     kickerTasks: "Track",
     kickerArchive: "Done",
     kickerFocus: "Timer",
@@ -428,6 +454,9 @@ function bindNotifications() {
 
 let inboxMessages = [];
 let reports = [];
+let marketBriefs = Array.isArray(window.__TASK_DECK_BOOT__?.marketBriefs)
+  ? window.__TASK_DECK_BOOT__.marketBriefs
+  : [];
 let inboxFetchInFlight = false;
 let inboxFetchQueued = false;
 let inboxRefreshTimer = null;
@@ -665,6 +694,18 @@ async function fetchReports() {
   renderReports();
 }
 
+async function fetchMarketBriefs() {
+  try {
+    const response = await fetch('/api/market-briefs', { cache: 'no-store' });
+    if (!response.ok) throw new Error('market briefs unavailable');
+    const data = await response.json();
+    marketBriefs = data.briefs || [];
+  } catch (error) {
+    marketBriefs = [];
+  }
+  renderMarketBrief();
+}
+
 async function generateReport(type) {
   const response = await fetch('/api/reports/generate', {
     method: 'POST',
@@ -704,6 +745,62 @@ function renderReports() {
   list.innerHTML = reports.length
     ? reports.map(renderReport).join("")
     : `<article class="report-card empty"><div class="report-head"><span>${escapeHtml(t("reports"))}</span><strong>${escapeHtml(t("noReportsTitle"))}</strong></div><p>${escapeHtml(t("noReportsNote"))}</p></article>`;
+}
+
+function renderMarketBrief() {
+  const hero = document.querySelector("#marketBriefHero");
+  const list = document.querySelector("#marketBriefList");
+  const meta = document.querySelector("#marketBriefMeta");
+  const count = document.querySelector("#marketBriefCount");
+  if (!hero && !list) return;
+  const ordered = [...marketBriefs].sort((a, b) => {
+    if (a.market !== b.market) return a.market === "us" ? -1 : 1;
+    return String(b.trade_date).localeCompare(String(a.trade_date));
+  });
+  const latestUs = ordered.find(brief => brief.market === "us");
+  const latestCn = ordered.find(brief => brief.market === "cn");
+  const featured = [latestUs, latestCn].filter(Boolean);
+  if (meta) {
+    meta.textContent = featured.length
+      ? featured.map(brief => `${brief.market === "us" ? t("marketUs") : t("marketCn")} · ${brief.trade_date}`).join(" / ")
+      : t("marketSchedule");
+  }
+  if (count) count.textContent = t("itemCount", ordered.length);
+  const imageHtml = brief => `
+    <article class="market-brief-card ${escapeHtml(brief.market)}">
+      <div class="market-brief-card-head">
+        <div>
+          <span>${brief.market === "us" ? t("marketUs") : t("marketCn")}</span>
+          <strong>${escapeHtml(brief.title)}</strong>
+        </div>
+        <em>${escapeHtml(brief.trade_date)}</em>
+      </div>
+      <img src="${escapeHtml(brief.image_path)}?v=${encodeURIComponent(brief.created_at || '')}" alt="${escapeHtml(brief.title)}" />
+      <p>${escapeHtml(brief.summary)}</p>
+    </article>
+  `;
+  if (hero) {
+    hero.innerHTML = featured.length
+      ? featured.map(imageHtml).join("")
+      : `<article class="market-brief-empty"><strong>${escapeHtml(t("marketBriefEmpty"))}</strong><span>${escapeHtml(t("marketBriefEmptyNote"))}</span></article>`;
+  }
+  if (list) {
+    list.innerHTML = ordered.length
+      ? ordered.map(brief => `
+        <article class="market-history-card">
+          <div>
+            <span>${brief.market === "us" ? t("marketUs") : t("marketCn")} · ${escapeHtml(brief.trade_date)}</span>
+            <strong>${escapeHtml(brief.title)}</strong>
+            <p>${escapeHtml(brief.summary)}</p>
+          </div>
+          <div class="market-history-meta">
+            <span>${escapeHtml(t("marketGenerated", brief.created_at))}</span>
+            <span>${escapeHtml(t("marketSource", brief.source_note || ""))}</span>
+          </div>
+        </article>
+      `).join("")
+      : `<article class="market-history-card empty"><strong>${escapeHtml(t("marketBriefEmpty"))}</strong><p>${escapeHtml(t("marketBriefEmptyNote"))}</p></article>`;
+  }
 }
 
 function bindReports() {
@@ -808,6 +905,7 @@ let activePage = location.hash.replace("#", "") || "overview";
 
 const pages = [
   { id: "overview", labelKey: "pageOverview", short: "HOME", railIcon: "H", titleKey: "titleOverview", kickerKey: "kickerOverview" },
+  { id: "market", labelKey: "pageMarket", short: "MKT", railIcon: "M", titleKey: "titleMarket", kickerKey: "kickerMarket" },
   { id: "tasks", labelKey: "pageTasks", short: "TASK", railIcon: "T", titleKey: "titleTasks", kickerKey: "kickerTasks" },
   { id: "archive", labelKey: "pageArchive", short: "ARC", railIcon: "A", titleKey: "titleArchive", kickerKey: "kickerArchive" },
   { id: "focus", labelKey: "pageFocus", short: "FOCUS", railIcon: "F", titleKey: "titleFocus", kickerKey: "kickerFocus" },
@@ -1165,6 +1263,7 @@ function render() {
   renderThemes();
   renderPageNav();
   renderTrackFilters();
+  renderMarketBrief();
   renderOverview();
   renderFocusQueue();
   renderTasks();
@@ -1243,6 +1342,7 @@ bindReports();
 fetchInbox();
 fetchWeWorkStatus();
 fetchReports();
+fetchMarketBriefs();
 tickClock();
 checkReminders();
 renderPomodoro();
@@ -1251,3 +1351,4 @@ setInterval(checkReminders, 30000);
 setInterval(renderDeadline, 60000);
 setInterval(fetchInbox, 5000);
 setInterval(fetchReports, 15 * 60 * 1000);
+setInterval(fetchMarketBriefs, 5 * 60 * 1000);

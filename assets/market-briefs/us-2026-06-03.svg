@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f8fb"/>
+      <stop offset="1" stop-color="#eef2f4"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.11"/>
+    </filter>
+    <style>
+      .eyebrow { font: 500 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #6d7280; letter-spacing: 0; }
+      .title { font: 700 52px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; letter-spacing: 0; }
+      .summary { font: 400 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #626772; }
+      .card-name { font: 600 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #555b66; }
+      .card-value { font: 750 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .section-title { font: 700 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
+      .row-label { font: 500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #343841; }
+      .row-value { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
+      .mini-title { font: 700 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
+      .mover-name { font: 600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #2d3138; }
+      .mover-value { font: 750 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
+      .source { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #7b8089; }
+    </style>
+  </defs>
+  <rect width="1280" height="760" fill="url(#bg)"/>
+  <circle cx="1120" cy="70" r="190" fill="#d9eee8" opacity="0.55"/>
+  <circle cx="150" cy="710" r="220" fill="#e9edf9" opacity="0.72"/>
+  <rect x="36" y="34" width="1208" height="692" rx="38" fill="rgba(255,255,255,0.72)" filter="url(#shadow)"/>
+  <text x="80" y="86" class="eyebrow">US OVERNIGHT MARKET · 2026-06-03 · 北京时间</text>
+  <text x="80" y="144" class="title">2026-06-03 美股隔夜复盘</text>
+  <text x="80" y="188" class="summary">三大指数从近期高位回落，能源相对抗跌，金融与科技承压。</text>
+  
+      <g transform="translate(80,126)">
+        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
+        <text x="22" y="34" class="card-name">S&amp;P 500</text>
+        <text x="22" y="74" class="card-value" fill="#c2473d">-0.70%</text>
+      </g>
+    
+      <g transform="translate(335,126)">
+        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
+        <text x="22" y="34" class="card-name">Nasdaq</text>
+        <text x="22" y="74" class="card-value" fill="#c2473d">-0.90%</text>
+      </g>
+    
+      <g transform="translate(590,126)">
+        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
+        <text x="22" y="34" class="card-name">Dow</text>
+        <text x="22" y="74" class="card-value" fill="#c2473d">-1.20%</text>
+      </g>
+    
+      <g transform="translate(845,126)">
+        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
+        <text x="22" y="34" class="card-name">Russell 2000</text>
+        <text x="22" y="74" class="card-value" fill="#c2473d">-1.10%</text>
+      </g>
+    
+  <text x="80" y="260" class="section-title">板块涨跌幅</text>
+  <line x1="370" y1="268" x2="370" y2="656" stroke="#cfd4dc" stroke-width="2"/>
+  
+      <text x="80" y="293" class="row-label">能源</text>
+      <rect x="370" y="276" width="177.69230769230768" height="18" rx="9" fill="#23815f" opacity="0.88"/>
+      <text x="610" y="293" class="row-value" fill="#23815f">+1.10%</text>
+    
+      <text x="80" y="327" class="row-label">公用事业</text>
+      <rect x="370" y="310" width="64.61538461538461" height="18" rx="9" fill="#23815f" opacity="0.88"/>
+      <text x="610" y="327" class="row-value" fill="#23815f">+0.40%</text>
+    
+      <text x="80" y="361" class="row-label">必选消费</text>
+      <rect x="370" y="344" width="32.30769230769231" height="18" rx="9" fill="#23815f" opacity="0.88"/>
+      <text x="610" y="361" class="row-value" fill="#23815f">+0.20%</text>
+    
+      <text x="80" y="395" class="row-label">医疗保健</text>
+      <rect x="353.84615384615387" y="378" width="16.153846153846153" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="395" class="row-value" fill="#c2473d">-0.10%</text>
+    
+      <text x="80" y="429" class="row-label">工业</text>
+      <rect x="289.2307692307692" y="412" width="80.76923076923076" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="429" class="row-value" fill="#c2473d">-0.50%</text>
+    
+      <text x="80" y="463" class="row-label">材料</text>
+      <rect x="273.0769230769231" y="446" width="96.92307692307692" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="463" class="row-value" fill="#c2473d">-0.60%</text>
+    
+      <text x="80" y="497" class="row-label">通信服务</text>
+      <rect x="256.9230769230769" y="480" width="113.07692307692307" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="497" class="row-value" fill="#c2473d">-0.70%</text>
+    
+      <text x="80" y="531" class="row-label">房地产</text>
+      <rect x="240.76923076923077" y="514" width="129.23076923076923" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="531" class="row-value" fill="#c2473d">-0.80%</text>
+    
+      <text x="80" y="565" class="row-label">可选消费</text>
+      <rect x="224.6153846153846" y="548" width="145.3846153846154" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="565" class="row-value" fill="#c2473d">-0.90%</text>
+    
+      <text x="80" y="599" class="row-label">信息技术</text>
+      <rect x="208.46153846153848" y="582" width="161.53846153846152" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="599" class="row-value" fill="#c2473d">-1.00%</text>
+    
+      <text x="80" y="633" class="row-label">金融</text>
+      <rect x="160" y="616" width="210" height="18" rx="9" fill="#c2473d" opacity="0.88"/>
+      <text x="610" y="633" class="row-value" fill="#c2473d">-1.30%</text>
+    
+  
+    <text x="760" y="304" class="mini-title">领涨个股</text>
+    
+      <g transform="translate(760,332)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Macy’s</text>
+        <text x="292" y="31" class="mover-value" fill="#23815f">+3.80%</text>
+      </g>
+    
+      <g transform="translate(760,390)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Phillips 66</text>
+        <text x="292" y="31" class="mover-value" fill="#23815f">+2.70%</text>
+      </g>
+    
+      <g transform="translate(760,448)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Exxon Mobil</text>
+        <text x="292" y="31" class="mover-value" fill="#23815f">+1.40%</text>
+      </g>
+    
+  
+  
+    <text x="760" y="516" class="mini-title">领跌个股</text>
+    
+      <g transform="translate(760,544)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Hewlett Packard Enterprise</text>
+        <text x="292" y="31" class="mover-value" fill="#c2473d">-4.80%</text>
+      </g>
+    
+      <g transform="translate(760,602)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Palo Alto Networks</text>
+        <text x="292" y="31" class="mover-value" fill="#c2473d">-3.90%</text>
+      </g>
+    
+      <g transform="translate(760,660)">
+        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
+        <text x="18" y="31" class="mover-name">Tesla</text>
+        <text x="292" y="31" class="mover-value" fill="#c2473d">-3.20%</text>
+      </g>
+    
+  
+  <text x="80" y="694" class="source">样例口径：指数按公开收盘报道；板块使用 SPDR 行业 ETF 代理，后续可替换为实时行情源。</text>
+</svg>

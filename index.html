@@ -100,6 +100,23 @@
           </div>
         </section>
 
+        <section class="page-view" data-page="market">
+          <section class="market-page-panel" aria-label="股票复盘">
+            <div class="section-head">
+              <h2 data-i18n="marketReview">股票复盘</h2>
+              <span id="marketBriefMeta">09:00 / 15:00</span>
+            </div>
+            <div class="market-brief-hero" id="marketBriefHero"></div>
+          </section>
+          <section class="market-history-panel light-panel" aria-label="复盘历史">
+            <div class="section-head">
+              <h2 data-i18n="marketHistory">复盘历史</h2>
+              <span id="marketBriefCount">0 项</span>
+            </div>
+            <div class="market-brief-list" id="marketBriefList"></div>
+          </section>
+        </section>
+
         <section class="page-view" data-page="tasks">
           <section class="control-strip" aria-label="任务筛选">
             <div class="segmented" id="filterTabs"></div>
@@ -250,6 +267,6 @@
       </div>
     </section>
     <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=20260604-ui-polish"></script>
+    <script src="app.js?v=20260605-layout-refactor"></script>
   </body>
 </html>

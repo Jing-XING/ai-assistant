@@ -16,9 +16,10 @@ A personal task dashboard, reminder system, and Codex operation bridge. The app 
 
 ## Features
 
-- Five main pages: Overview, Tasks, Archive, Focus, and Settings.
+- Six main pages: Overview, Market Review, Tasks, Archive, Focus, and Settings.
 - Codex is available as a global floating chat dock instead of a dedicated sidebar page.
 - SQLite stores tasks, reminders, web messages, Codex events, and weekly/monthly reports.
+- The Market Review page generates US overnight and A-share close SVG briefs in Beijing time and stores them under `assets/market-briefs/`.
 - Timed tasks remind 10 minutes early by default.
 - WeWork bot integration can sync reminders, key Codex results, and errors.
 - Web messages are stored in `inbox`; the server can call local `codex exec --json` automatically and stream live events back to the page through SSE.
@@ -42,6 +43,14 @@ Syntax check:
 ```bash
 npm run check
 ```
+
+Page screenshot audit:
+
+```bash
+scripts/capture-pages.sh
+```
+
+Screenshots are written to `.tmp/screenshots/` by default and are not committed.
 
 ## Environment Variables
 
