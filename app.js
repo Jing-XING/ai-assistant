@@ -1,6 +1,6 @@
 const i18n = {
   zh: {
-    appTitle: "个人任务指挥台",
+    appTitle: "基于 Codex 的 AI 助理",
     languageToggle: "EN",
     languageState: "中文",
     beijingTime: "北京时间",
@@ -176,7 +176,7 @@ const i18n = {
     timelineEvening: "轻任务：best paper、简历、复盘，三选一",
   },
   en: {
-    appTitle: "Personal Task Deck",
+    appTitle: "ai-assistant-based-on-codex",
     languageToggle: "中",
     languageState: "English",
     beijingTime: "Beijing Time",

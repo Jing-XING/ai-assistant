@@ -1,8 +1,8 @@
-# Personal Task Deck
+# ai-assistant-based-on-codex
 
 [中文](README.md) | English
 
-A personal task dashboard, reminder system, and Codex operation bridge. The app uses Beijing time by default and provides task tracking, time blocks, Pomodoro focus, archived reports, and a floating Codex chat dock. Local SQLite is used for static storage.
+A Codex-based personal AI assistant, task dashboard, reminder system, and operation bridge. The app uses Beijing time by default and provides task tracking, time blocks, Pomodoro focus, archived reports, and a floating Codex chat dock. Local SQLite is used for static storage.
 
 ## Screenshots
 
