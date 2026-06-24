@@ -9,7 +9,6 @@ const PORT = Number(process.env.PORT || 8787);
 const ROOT = __dirname;
 const DB_PATH = path.join(ROOT, 'task_dashboard.db');
 const PROGRESS_ROOT = path.resolve(ROOT, '..', 'progress');
-const MARKET_BRIEF_DIR = path.join(ROOT, 'assets', 'market-briefs');
 const db = new DatabaseSync(DB_PATH);
 const ENV_PATH = path.join(ROOT, '.env');
 
@@ -113,6 +112,7 @@ function initDb() {
       summary TEXT NOT NULL,
       image_path TEXT NOT NULL,
       source_note TEXT NOT NULL DEFAULT '',
+      payload TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(market, trade_date)
     );
@@ -120,6 +120,10 @@ function initDb() {
   const taskColumns = db.prepare('PRAGMA table_info(tasks)').all().map(column => column.name);
   if (!taskColumns.includes('archived_at')) {
     db.exec(`ALTER TABLE tasks ADD COLUMN archived_at TEXT NOT NULL DEFAULT ''`);
+  }
+  const marketBriefColumns = db.prepare('PRAGMA table_info(market_briefs)').all().map(column => column.name);
+  if (!marketBriefColumns.includes('payload')) {
+    db.exec(`ALTER TABLE market_briefs ADD COLUMN payload TEXT NOT NULL DEFAULT '{}'`);
   }
   db.exec(`
     UPDATE tasks
@@ -429,23 +433,6 @@ function pct(value) {
   return `${number > 0 ? '+' : ''}${number.toFixed(2)}%`;
 }
 
-function colorForChange(value) {
-  const number = Number(value || 0);
-  if (number > 0) return '#23815f';
-  if (number < 0) return '#c2473d';
-  return '#6f737c';
-}
-
-function escapeXml(value) {
-  return String(value || '').replace(/[&<>"']/g, ch => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&apos;',
-  }[ch]));
-}
-
 function defaultUsBrief(tradeDate) {
   return {
     market: 'us',
@@ -512,117 +499,67 @@ function defaultCnBrief(tradeDate) {
   };
 }
 
-function marketBriefSvg(brief) {
-  const width = 1280;
-  const height = 760;
-  const sectors = [...brief.sectors].sort((a, b) => b.change - a.change);
-  const maxAbs = Math.max(1, ...sectors.map(item => Math.abs(Number(item.change || 0))));
-  const sectorRows = sectors.slice(0, 11).map((item, index) => {
-    const y = 276 + index * 34;
-    const barWidth = Math.max(4, Math.abs(item.change) / maxAbs * 210);
-    const x = item.change >= 0 ? 370 : 370 - barWidth;
-    return `
-      <text x="80" y="${y + 17}" class="row-label">${escapeXml(item.name)}</text>
-      <rect x="${x}" y="${y}" width="${barWidth}" height="18" rx="9" fill="${colorForChange(item.change)}" opacity="0.88"/>
-      <text x="610" y="${y + 17}" class="row-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
-    `;
-  }).join('');
-  const indexCards = brief.indices.slice(0, 4).map((item, index) => {
-    const x = 80 + index * 255;
-    return `
-      <g transform="translate(${x},126)">
-        <rect width="222" height="96" rx="22" fill="rgba(255,255,255,0.78)" stroke="rgba(40,44,52,0.08)"/>
-        <text x="22" y="34" class="card-name">${escapeXml(item.name)}</text>
-        <text x="22" y="74" class="card-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
-      </g>
-    `;
-  }).join('');
-  const moverList = (items, x, y, title) => `
-    <text x="${x}" y="${y}" class="mini-title">${escapeXml(title)}</text>
-    ${items.slice(0, 3).map((item, index) => `
-      <g transform="translate(${x},${y + 28 + index * 58})">
-        <rect width="360" height="50" rx="16" fill="rgba(255,255,255,0.64)"/>
-        <text x="18" y="31" class="mover-name">${escapeXml(item.name)}</text>
-        <text x="292" y="31" class="mover-value" fill="${colorForChange(item.change)}">${pct(item.change)}</text>
-      </g>
-    `).join('')}
-  `;
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f7f8fb"/>
-      <stop offset="1" stop-color="#eef2f4"/>
-    </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.11"/>
-    </filter>
-    <style>
-      .eyebrow { font: 500 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #6d7280; letter-spacing: 0; }
-      .title { font: 700 52px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; letter-spacing: 0; }
-      .summary { font: 400 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #626772; }
-      .card-name { font: 600 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #555b66; }
-      .card-value { font: 750 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      .section-title { font: 700 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
-      .row-label { font: 500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #343841; }
-      .row-value { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
-      .mini-title { font: 700 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d1d1f; }
-      .mover-name { font: 600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #2d3138; }
-      .mover-value { font: 750 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: end; }
-      .source { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #7b8089; }
-    </style>
-  </defs>
-  <rect width="1280" height="760" fill="url(#bg)"/>
-  <circle cx="1120" cy="70" r="190" fill="#d9eee8" opacity="0.55"/>
-  <circle cx="150" cy="710" r="220" fill="#e9edf9" opacity="0.72"/>
-  <rect x="36" y="34" width="1208" height="692" rx="38" fill="rgba(255,255,255,0.72)" filter="url(#shadow)"/>
-  <text x="80" y="86" class="eyebrow">${brief.market === 'us' ? 'US OVERNIGHT MARKET' : 'A-SHARE CLOSE'} · ${escapeXml(brief.tradeDate)} · 北京时间</text>
-  <text x="80" y="144" class="title">${escapeXml(brief.title)}</text>
-  <text x="80" y="188" class="summary">${escapeXml(brief.summary)}</text>
-  ${indexCards}
-  <text x="80" y="260" class="section-title">板块涨跌幅</text>
-  <line x1="370" y1="268" x2="370" y2="656" stroke="#cfd4dc" stroke-width="2"/>
-  ${sectorRows}
-  ${moverList(brief.leaders, 760, 304, '领涨个股')}
-  ${moverList(brief.laggards, 760, 516, '领跌个股')}
-  <text x="80" y="694" class="source">${escapeXml(brief.sourceNote)}</text>
-</svg>`;
-}
-
 function writeMarketBrief(brief) {
-  fs.mkdirSync(MARKET_BRIEF_DIR, { recursive: true });
   const id = `${brief.market}-${brief.tradeDate}`;
-  const relativePath = `assets/market-briefs/${id}.svg`;
-  fs.writeFileSync(path.join(ROOT, relativePath), marketBriefSvg(brief), 'utf8');
   db.prepare(`
-    INSERT INTO market_briefs (id, market, trade_date, title, summary, image_path, source_note)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO market_briefs (id, market, trade_date, title, summary, image_path, source_note, payload)
+    VALUES (?, ?, ?, ?, ?, '', ?, ?)
     ON CONFLICT(market, trade_date) DO UPDATE SET
       title = excluded.title,
       summary = excluded.summary,
       image_path = excluded.image_path,
       source_note = excluded.source_note,
+      payload = excluded.payload,
       created_at = CURRENT_TIMESTAMP
-  `).run(id, brief.market, brief.tradeDate, brief.title, brief.summary, relativePath, brief.sourceNote || '');
+  `).run(id, brief.market, brief.tradeDate, brief.title, brief.summary, brief.sourceNote || '', JSON.stringify(brief));
   notifySse({ type: 'market_briefs_updated', brief_id: id });
   return id;
+}
+
+function backfillMarketBriefPayloads() {
+  const legacyRows = db.prepare(`
+    SELECT market, trade_date
+    FROM market_briefs
+    WHERE payload = '' OR payload = '{}'
+  `).all();
+  for (const row of legacyRows) {
+    const brief = row.market === 'cn' ? defaultCnBrief(row.trade_date) : defaultUsBrief(row.trade_date);
+    writeMarketBrief(brief);
+  }
 }
 
 function ensureSeedMarketBrief() {
   const id = 'us-2026-06-03';
   const existing = db.prepare('SELECT id FROM market_briefs WHERE id = ?').get(id);
-  if (!existing || !fs.existsSync(path.join(MARKET_BRIEF_DIR, `${id}.svg`))) {
+  if (!existing) {
     writeMarketBrief(defaultUsBrief('2026-06-03'));
   }
 }
 
 function marketBriefRows() {
-  return db.prepare(`
-    SELECT id, market, trade_date, title, summary, image_path, source_note, created_at
+  const rows = db.prepare(`
+    SELECT id, market, trade_date, title, summary, image_path, source_note, payload, created_at
     FROM market_briefs
     ORDER BY trade_date DESC, created_at DESC
     LIMIT 20
   `).all();
+  return rows.map(row => {
+    let payload = {};
+    try {
+      payload = JSON.parse(row.payload || '{}');
+    } catch {
+      payload = {};
+    }
+    const { payload: _payload, ...publicRow } = row;
+    return {
+      ...publicRow,
+      image_path: '',
+      indices: Array.isArray(payload.indices) ? payload.indices : [],
+      sectors: Array.isArray(payload.sectors) ? payload.sectors : [],
+      leaders: Array.isArray(payload.leaders) ? payload.leaders : [],
+      laggards: Array.isArray(payload.laggards) ? payload.laggards : [],
+    };
+  });
 }
 
 function previousBeijingDate(date = new Date()) {
@@ -639,7 +576,7 @@ function scanMarketBriefJobs() {
     if (!getState(key)) {
       writeMarketBrief(defaultUsBrief(tradeDate));
       setState(key, '1');
-      sendWeWork(`美股隔夜复盘已生成：${tradeDate}，可在任务看板查看大图。`).catch(error => console.error(error.message));
+      sendWeWork(`美股隔夜复盘数据已更新：${tradeDate}，可在任务看板查看统计和图表。`).catch(error => console.error(error.message));
     }
   }
   if (parts.hour >= 15) {
@@ -648,11 +585,12 @@ function scanMarketBriefJobs() {
     if (!getState(key)) {
       writeMarketBrief(defaultCnBrief(tradeDate));
       setState(key, '1');
-      sendWeWork(`A 股收盘复盘已生成：${tradeDate}，可在任务看板查看大图。`).catch(error => console.error(error.message));
+      sendWeWork(`A 股收盘复盘数据已更新：${tradeDate}，可在任务看板查看统计和图表。`).catch(error => console.error(error.message));
     }
   }
 }
 
+backfillMarketBriefPayloads();
 ensureSeedMarketBrief();
 
 function scanReportJobs() {

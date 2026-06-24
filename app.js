@@ -24,8 +24,8 @@ const i18n = {
     marketBrief: "市场复盘",
     marketReview: "股票复盘",
     marketHistory: "复盘历史",
-    marketBriefEmpty: "暂无市场复盘图",
-    marketBriefEmptyNote: "每天 09:00 生成美股隔夜复盘，15:00 后生成 A 股收盘复盘。",
+    marketBriefEmpty: "暂无市场复盘数据",
+    marketBriefEmptyNote: "每天 09:00 更新美股隔夜统计，15:00 后更新 A 股收盘统计。",
     marketUs: "美股",
     marketCn: "A 股",
     marketSchedule: "美股 09:00 / A 股 15:00",
@@ -200,8 +200,8 @@ const i18n = {
     marketBrief: "Market Brief",
     marketReview: "Market Review",
     marketHistory: "Brief History",
-    marketBriefEmpty: "No market brief yet",
-    marketBriefEmptyNote: "US overnight brief at 09:00 and A-share close brief after 15:00.",
+    marketBriefEmpty: "No market data brief yet",
+    marketBriefEmptyNote: "US overnight statistics at 09:00 and A-share close statistics after 15:00.",
     marketUs: "US",
     marketCn: "A-share",
     marketSchedule: "US 09:00 / A-share 15:00",
@@ -747,6 +747,65 @@ function renderReports() {
     : `<article class="report-card empty"><div class="report-head"><span>${escapeHtml(t("reports"))}</span><strong>${escapeHtml(t("noReportsTitle"))}</strong></div><p>${escapeHtml(t("noReportsNote"))}</p></article>`;
 }
 
+function pctText(value) {
+  const number = Number(value || 0);
+  return `${number > 0 ? "+" : ""}${number.toFixed(2)}%`;
+}
+
+function changeClass(value) {
+  const number = Number(value || 0);
+  if (number > 0) return "up";
+  if (number < 0) return "down";
+  return "flat";
+}
+
+function marketBriefStatsHtml(brief, compact = false) {
+  const indices = Array.isArray(brief.indices) ? brief.indices.slice(0, compact ? 3 : 4) : [];
+  const sectors = Array.isArray(brief.sectors) ? [...brief.sectors].sort((a, b) => Number(b.change || 0) - Number(a.change || 0)).slice(0, compact ? 5 : 8) : [];
+  const leaders = Array.isArray(brief.leaders) ? brief.leaders.slice(0, compact ? 2 : 3) : [];
+  const laggards = Array.isArray(brief.laggards) ? brief.laggards.slice(0, compact ? 2 : 3) : [];
+  const maxAbs = Math.max(1, ...sectors.map(item => Math.abs(Number(item.change || 0))));
+  const indexHtml = indices.length
+    ? indices.map(item => `
+      <span class="market-index-pill ${changeClass(item.change)}">
+        <em>${escapeHtml(item.name)}</em>
+        <strong>${escapeHtml(pctText(item.change))}</strong>
+      </span>
+    `).join("")
+    : `<span class="market-muted">${escapeHtml(t("marketBriefEmptyNote"))}</span>`;
+  const sectorHtml = sectors.length
+    ? sectors.map(item => {
+      const width = Math.max(5, Math.abs(Number(item.change || 0)) / maxAbs * 100);
+      return `
+        <div class="market-sector-row ${changeClass(item.change)}">
+          <span>${escapeHtml(item.name)}</span>
+          <div class="market-sector-track" aria-hidden="true"><i style="width:${width.toFixed(1)}%"></i></div>
+          <strong>${escapeHtml(pctText(item.change))}</strong>
+        </div>
+      `;
+    }).join("")
+    : `<span class="market-muted">${escapeHtml(t("marketBriefEmptyNote"))}</span>`;
+  const moversHtml = (items, label) => `
+    <div class="market-mover-list">
+      <span>${escapeHtml(label)}</span>
+      ${items.length ? items.map(item => `
+        <p class="${changeClass(item.change)}">
+          <em>${escapeHtml(item.name)}</em>
+          <strong>${escapeHtml(pctText(item.change))}</strong>
+        </p>
+      `).join("") : `<p class="flat"><em>${escapeHtml(t("marketBriefEmpty"))}</em><strong>${escapeHtml(pctText(0))}</strong></p>`}
+    </div>
+  `;
+  return `
+    <div class="market-index-grid">${indexHtml}</div>
+    <div class="market-sector-chart">${sectorHtml}</div>
+    <div class="market-movers">
+      ${moversHtml(leaders, currentLang === "zh" ? "领涨" : "Leaders")}
+      ${moversHtml(laggards, currentLang === "zh" ? "领跌" : "Laggards")}
+    </div>
+  `;
+}
+
 function renderMarketBrief() {
   const hero = document.querySelector("#marketBriefHero");
   const list = document.querySelector("#marketBriefList");
@@ -766,7 +825,7 @@ function renderMarketBrief() {
       : t("marketSchedule");
   }
   if (count) count.textContent = t("itemCount", ordered.length);
-  const imageHtml = brief => `
+  const briefHtml = brief => `
     <article class="market-brief-card ${escapeHtml(brief.market)}">
       <div class="market-brief-card-head">
         <div>
@@ -775,13 +834,14 @@ function renderMarketBrief() {
         </div>
         <em>${escapeHtml(brief.trade_date)}</em>
       </div>
-      <img src="${escapeHtml(brief.image_path)}?v=${encodeURIComponent(brief.created_at || '')}" alt="${escapeHtml(brief.title)}" />
       <p>${escapeHtml(brief.summary)}</p>
+      ${marketBriefStatsHtml(brief)}
+      <small>${escapeHtml(brief.source_note || "")}</small>
     </article>
   `;
   if (hero) {
     hero.innerHTML = featured.length
-      ? featured.map(imageHtml).join("")
+      ? featured.map(briefHtml).join("")
       : `<article class="market-brief-empty"><strong>${escapeHtml(t("marketBriefEmpty"))}</strong><span>${escapeHtml(t("marketBriefEmptyNote"))}</span></article>`;
   }
   if (list) {
@@ -792,6 +852,9 @@ function renderMarketBrief() {
             <span>${brief.market === "us" ? t("marketUs") : t("marketCn")} · ${escapeHtml(brief.trade_date)}</span>
             <strong>${escapeHtml(brief.title)}</strong>
             <p>${escapeHtml(brief.summary)}</p>
+          </div>
+          <div class="market-history-stats">
+            ${marketBriefStatsHtml(brief, true)}
           </div>
           <div class="market-history-meta">
             <span>${escapeHtml(t("marketGenerated", brief.created_at))}</span>

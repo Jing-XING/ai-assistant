@@ -19,7 +19,7 @@ A Codex-based personal AI assistant, task dashboard, reminder system, and operat
 - Six main pages: Overview, Market Review, Tasks, Archive, Focus, and Settings.
 - Codex is available as a global floating chat dock instead of a dedicated sidebar page.
 - SQLite stores tasks, reminders, web messages, Codex events, and weekly/monthly reports.
-- The Market Review page generates US overnight and A-share close SVG briefs in Beijing time and stores them under `assets/market-briefs/`.
+- The Market Review page updates structured US overnight and A-share close statistics in Beijing time, then renders text summaries, index cards, sector bar charts, and leader/laggard lists in the page.
 - Timed tasks remind 10 minutes early by default.
 - WeWork bot integration can sync reminders, key Codex results, and errors.
 - Web messages are stored in `inbox`; the server can call local `codex exec --json` automatically and stream live events back to the page through SSE.
